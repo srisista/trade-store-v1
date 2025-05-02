@@ -68,4 +68,5 @@ class TradeExpirationSchedulerTest {
         verify(tradeService, times(1)).updateExpiredTrades();
         //verify(logger, times(1)).error(eq("Error updating expired trades: {}"), eq(exception.getMessage()), eq(exception));
     }
+
 } 
