@@ -28,7 +28,6 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <testcontainers.version>1.19.3</testcontainers.version>
     </properties>
-
     <dependencies>
         <!-- Spring Boot Starters -->
         <dependency>
