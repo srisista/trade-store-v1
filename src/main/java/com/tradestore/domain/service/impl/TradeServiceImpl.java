@@ -2,10 +2,8 @@ package com.tradestore.domain.service.impl;
 
 import com.tradestore.domain.exception.TradeException;
 import com.tradestore.domain.model.Trade;
-import com.tradestore.domain.model.TradeId;
 import com.tradestore.domain.service.TradeService;
 import com.tradestore.infrastructure.repository.TradeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -17,7 +15,6 @@ public class TradeServiceImpl implements TradeService {
 
     private final TradeRepository tradeRepository;
 
-    @Autowired
     public TradeServiceImpl(TradeRepository tradeRepository) {
         this.tradeRepository = tradeRepository;
     }

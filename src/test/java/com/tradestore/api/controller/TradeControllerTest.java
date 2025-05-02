@@ -1,42 +1,46 @@
 package com.tradestore.api.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tradestore.domain.exception.TradeException;
 import com.tradestore.domain.model.Trade;
 import com.tradestore.domain.model.TradeId;
 import com.tradestore.domain.service.TradeService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(TradeController.class)
 class TradeControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockBean
     private TradeService tradeService;
 
-    @InjectMocks
-    private TradeController tradeController;
-
-    private Trade trade;
-    private TradeId tradeId;
-
-    @BeforeEach
-    void setUp() {
-        tradeId = new TradeId("T1", 1);
-        trade = Trade.builder()
+    @Test
+    void storeTrade_ValidTrade_ReturnsCreatedTrade() throws Exception {
+        // Arrange
+        TradeId tradeId = new TradeId("T1", 1);
+        Trade trade = Trade.builder()
                 .tradeId(tradeId)
                 .counterPartyId("CP-1")
                 .bookId("B1")
@@ -44,78 +48,132 @@ class TradeControllerTest {
                 .createdDate(LocalDate.now())
                 .expired(false)
                 .build();
-    }
-
-    @Test
-    void storeTrade_ValidTrade_ShouldReturnCreated() {
-        // Arrange
         when(tradeService.storeTrade(any(Trade.class))).thenReturn(trade);
 
-        // Act
-        ResponseEntity<Trade> response = tradeController.storeTrade(trade);
-
-        // Assert
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(tradeId.getTradeId(), response.getBody().getTradeId().getTradeId());
+        // Act & Assert
+        mockMvc.perform(post("/api/trades")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(trade)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.tradeId.tradeId").value("T1"))
+                .andExpect(jsonPath("$.tradeId.version").value(1));
     }
 
     @Test
-    void getAllTrades_ShouldReturnAllTrades() {
+    void storeTrade_InvalidTrade_ReturnsBadRequest() throws Exception {
         // Arrange
-        List<Trade> trades = Arrays.asList(trade);
+        TradeId tradeId = new TradeId("T1", 1);
+        Trade trade = Trade.builder()
+                .tradeId(tradeId)
+                .counterPartyId("CP-1")
+                .bookId("B1")
+                .maturityDate(LocalDate.now().minusDays(1))
+                .createdDate(LocalDate.now())
+                .expired(false)
+                .build();
+        when(tradeService.storeTrade(any(Trade.class)))
+                .thenThrow(new TradeException("Maturity date cannot be in the past"));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/trades")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(trade)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Maturity date cannot be in the past"));
+    }
+
+    @Test
+    void getAllTrades_ReturnsListOfTrades() throws Exception {
+        // Arrange
+        TradeId tradeId1 = new TradeId("T1", 1);
+        TradeId tradeId2 = new TradeId("T2", 1);
+        List<Trade> trades = Arrays.asList(
+                Trade.builder()
+                        .tradeId(tradeId1)
+                        .counterPartyId("CP-1")
+                        .bookId("B1")
+                        .maturityDate(LocalDate.now().plusDays(1))
+                        .createdDate(LocalDate.now())
+                        .expired(false)
+                        .build(),
+                Trade.builder()
+                        .tradeId(tradeId2)
+                        .counterPartyId("CP-2")
+                        .bookId("B2")
+                        .maturityDate(LocalDate.now().plusDays(1))
+                        .createdDate(LocalDate.now())
+                        .expired(false)
+                        .build()
+        );
         when(tradeService.getAllTrades()).thenReturn(trades);
 
-        // Act
-        ResponseEntity<List<Trade>> response = tradeController.getAllTrades();
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(1, response.getBody().size());
-        assertEquals(tradeId.getTradeId(), response.getBody().get(0).getTradeId().getTradeId());
+        // Act & Assert
+        mockMvc.perform(get("/api/trades"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].tradeId.tradeId").value("T1"))
+                .andExpect(jsonPath("$[1].tradeId.tradeId").value("T2"));
     }
 
     @Test
-    void getTradeById_ShouldReturnTrade() {
+    void getTradeById_ExistingTrade_ReturnsTrade() throws Exception {
         // Arrange
-        when(tradeService.getTradeById(anyString())).thenReturn(Optional.of(trade));
+        TradeId tradeId = new TradeId("T1", 1);
+        Trade trade = Trade.builder()
+                .tradeId(tradeId)
+                .counterPartyId("CP-1")
+                .bookId("B1")
+                .maturityDate(LocalDate.now().plusDays(1))
+                .createdDate(LocalDate.now())
+                .expired(false)
+                .build();
+        when(tradeService.getTradeById("T1")).thenReturn(Optional.of(trade));
 
-        // Act
-        ResponseEntity<Trade> response = tradeController.getTradeById("T1");
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(tradeId.getTradeId(), response.getBody().getTradeId().getTradeId());
+        // Act & Assert
+        mockMvc.perform(get("/api/trades/T1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tradeId.tradeId").value("T1"))
+                .andExpect(jsonPath("$.tradeId.version").value(1));
     }
 
     @Test
-    void getTradeById_NotFound_ShouldReturnNotFound() {
+    void getTradeById_NonExistingTrade_ReturnsNotFound() throws Exception {
         // Arrange
-        when(tradeService.getTradeById(anyString())).thenReturn(Optional.empty());
+        when(tradeService.getTradeById("T1")).thenReturn(Optional.empty());
 
-        // Act
-        ResponseEntity<Trade> response = tradeController.getTradeById("T1");
-
-        // Assert
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNull(response.getBody());
+        // Act & Assert
+        mockMvc.perform(get("/api/trades/T1"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    void getTradeVersions_ShouldReturnAllVersions() {
+    void getTradesByTradeId_ReturnsListOfTrades() throws Exception {
         // Arrange
-        List<Trade> trades = Arrays.asList(trade);
-        when(tradeService.getTradesByTradeId(anyString())).thenReturn(trades);
+        TradeId tradeId1 = new TradeId("T1", 1);
+        TradeId tradeId2 = new TradeId("T1", 2);
+        List<Trade> trades = Arrays.asList(
+                Trade.builder()
+                        .tradeId(tradeId1)
+                        .counterPartyId("CP-1")
+                        .bookId("B1")
+                        .maturityDate(LocalDate.now().plusDays(1))
+                        .createdDate(LocalDate.now())
+                        .expired(false)
+                        .build(),
+                Trade.builder()
+                        .tradeId(tradeId2)
+                        .counterPartyId("CP-1")
+                        .bookId("B1")
+                        .maturityDate(LocalDate.now().plusDays(1))
+                        .createdDate(LocalDate.now())
+                        .expired(false)
+                        .build()
+        );
+        when(tradeService.getTradesByTradeId("T1")).thenReturn(trades);
 
-        // Act
-        ResponseEntity<List<Trade>> response = tradeController.getTradeVersions("T1");
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(1, response.getBody().size());
-        assertEquals(tradeId.getTradeId(), response.getBody().get(0).getTradeId().getTradeId());
+        // Act & Assert
+        mockMvc.perform(get("/api/trades/T1/versions"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].tradeId.version").value(1))
+                .andExpect(jsonPath("$[1].tradeId.version").value(2));
     }
 } 

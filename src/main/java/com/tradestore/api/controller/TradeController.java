@@ -4,7 +4,6 @@ import com.tradestore.domain.model.Trade;
 import com.tradestore.domain.service.TradeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +17,6 @@ public class TradeController {
 
     private final TradeService tradeService;
 
-    @Autowired
     public TradeController(TradeService tradeService) {
         this.tradeService = tradeService;
     }
