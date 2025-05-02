@@ -22,10 +22,13 @@ jobs:
           distribution: 'temurin'
           cache: maven
       
-      - name: Build and Test with Coverage
+      - name: Run Tests and Generate Coverage Report
         run: |
           # Run tests with coverage
           mvn clean verify
+          
+          # Generate JaCoCo report
+          mvn jacoco:report
           
           # Verify JaCoCo report exists
           if [ ! -f "target/site/jacoco/index.html" ]; then
@@ -36,16 +39,39 @@ jobs:
           # Extract and display coverage information
           echo "::group::Coverage Report"
           echo "=== Package Coverage ==="
-          grep -A 2 "Total" target/site/jacoco/index.html
-          echo "=== Detailed Coverage ==="
-          grep -A 5 "Total" target/site/jacoco/index.html
-          echo "::endgroup::"
           
-          # Check if any package is below threshold
-          if grep -q "Rule violated for package" target/site/jacoco/index.html; then
-            echo "::error::Some packages are below coverage threshold. Please add more tests."
-            exit 1
-          fi
+          # Check coverage for each package with its specific threshold
+          check_package_coverage() {
+            local package=$1
+            local threshold=$2
+            local coverage=$(grep -A 2 "$package" target/site/jacoco/index.html | grep -oP '\d+\.\d+%' | head -1 | sed 's/%//')
+            
+            if [ -z "$coverage" ]; then
+              echo "::error::Could not find coverage for package: $package"
+              return 1
+            fi
+            
+            if (( $(echo "$coverage < $threshold" | bc -l) )); then
+              echo "::error::Package $package coverage is below threshold (current: $coverage%, required: $threshold%)"
+              return 1
+            else
+              echo "Package $package: $coverage% (threshold: $threshold%)"
+            fi
+          }
+          
+          # Check each package with its specific threshold
+          check_package_coverage "com.tradestore.domain.service" 85 || exit 1
+          check_package_coverage "com.tradestore.domain.service.impl" 85 || exit 1
+          check_package_coverage "com.tradestore.api.controller" 80 || exit 1
+          check_package_coverage "com.tradestore.api.mapper" 80 || exit 1
+          check_package_coverage "com.tradestore.api.exception" 70 || exit 1
+          check_package_coverage "com.tradestore.domain.exception" 70 || exit 1
+          check_package_coverage "com.tradestore.infrastructure" 65 || exit 1
+          check_package_coverage "com.tradestore" 30 || exit 1
+          
+          echo "=== Overall Coverage ==="
+          grep -A 2 "Total" target/site/jacoco/index.html
+          echo "::endgroup::"
       
       - name: Run OWASP Dependency Check
         run: |
