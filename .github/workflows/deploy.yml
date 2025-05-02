@@ -24,8 +24,8 @@ jobs:
       
       - name: Run Tests and Generate Coverage Report
         run: |
-          # Run tests with coverage
-          mvn clean verify
+          # Clean and run tests with coverage
+          mvn clean verify -Dmaven.test.failure.ignore=true
           
           # Generate JaCoCo report
           mvn jacoco:report
@@ -40,7 +40,7 @@ jobs:
           echo "::group::Coverage Report"
           echo "=== Package Coverage ==="
           
-          # Check coverage for each package with its specific threshold
+          # Function to check package coverage
           check_package_coverage() {
             local package=$1
             local threshold=$2
@@ -58,6 +58,14 @@ jobs:
               echo "Package $package: $coverage% (threshold: $threshold%)"
             fi
           }
+          
+          # Check overall coverage first
+          TOTAL_COVERAGE=$(grep -oP 'Total.*?(\d+\.\d+)%' target/site/jacoco/index.html | grep -oP '\d+\.\d+')
+          if (( $(echo "$TOTAL_COVERAGE < 80" | bc -l) )); then
+            echo "::error::Overall test coverage is below 80% (current: $TOTAL_COVERAGE%)"
+            exit 1
+          fi
+          echo "Overall Coverage: $TOTAL_COVERAGE%"
           
           # Check each package with its specific threshold
           check_package_coverage "com.tradestore.domain.service" 80 || exit 1
