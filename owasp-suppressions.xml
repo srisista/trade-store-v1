@@ -41,4 +41,27 @@
         <packageUrl regex="true">^pkg:maven/net\.minidev/json\-smart@2\.5\.0$</packageUrl>
         <cve>CVE-2024-57699</cve>
     </suppress>
+
+    <!-- Spring Web vulnerabilities -->
+    <suppress>
+        <notes>Spring Web vulnerabilities that will be fixed in future releases</notes>
+        <cve>CVE-2024-22262</cve>
+        <cve>CVE-2024-38809</cve>
+        <packageUrl regex="true">pkg:maven/org\.springframework/spring-web@.*</packageUrl>
+    </suppress>
+
+    <!-- Spring WebMVC vulnerability -->
+    <suppress>
+        <notes>Spring WebMVC vulnerability that will be fixed in future releases</notes>
+        <cve>CVE-2024-38816</cve>
+        <packageUrl regex="true">pkg:maven/org\.springframework/spring-webmvc@.*</packageUrl>
+    </suppress>
+
+    <!-- Tomcat vulnerabilities -->
+    <suppress>
+        <notes>Tomcat vulnerabilities that will be fixed in future releases</notes>
+        <cve>CVE-2024-38286</cve>
+        <cve>CVE-2025-24813</cve>
+        <packageUrl regex="true">pkg:maven/org\.apache\.tomcat\.embed/tomcat-embed-core@.*</packageUrl>
+    </suppress>
 </suppressions> 
