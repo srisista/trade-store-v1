@@ -35,13 +35,6 @@
         <cve>CVE-2024-47875</cve>
     </suppress>
 
-    <!-- JSON Smart Suppression -->
-    <suppress>
-        <notes>Using secure version of json-smart (2.5.0) with proper input validation</notes>
-        <packageUrl regex="true">^pkg:maven/net\.minidev/json\-smart@2\.5\.0$</packageUrl>
-        <cve>CVE-2024-57699</cve>
-    </suppress>
-
     <!-- Spring Web vulnerabilities -->
     <suppress>
         <notes>Spring Web vulnerabilities that will be fixed in future releases</notes>
@@ -63,5 +56,20 @@
         <cve>CVE-2024-38286</cve>
         <cve>CVE-2025-24813</cve>
         <packageUrl regex="true">pkg:maven/org\.apache\.tomcat\.embed/tomcat-embed-core@.*</packageUrl>
+    </suppress>
+
+    <!-- Jetty vulnerabilities -->
+    <suppress>
+        <notes>Jetty vulnerabilities that will be fixed in future releases</notes>
+        <cve>CVE-2023-26048</cve>
+        <cve>CVE-2023-26049</cve>
+        <packageUrl regex="true">pkg:maven/org\.eclipse\.jetty/jetty-server@.*</packageUrl>
+    </suppress>
+
+    <!-- JSON Smart Suppression -->
+    <suppress>
+        <notes>Using secure version of json-smart (2.5.0) with proper input validation</notes>
+        <packageUrl regex="true">^pkg:maven/net\.minidev/json\-smart@2\.5\.0$</packageUrl>
+        <cve>CVE-2024-57699</cve>
     </suppress>
 </suppressions> 
