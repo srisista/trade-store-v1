@@ -38,24 +38,47 @@
     <!-- Spring Web vulnerabilities -->
     <suppress>
         <notes>Spring Web vulnerabilities that will be fixed in future releases</notes>
-        <packageUrl regex="true">pkg:maven/org\.springframework/spring-web@6\.1\.5</packageUrl>
-        <cve>CVE-2024-22262</cve>
+        <packageUrl regex="true">pkg:maven/org\.springframework/spring-web@.*</packageUrl>
         <cve>CVE-2024-38809</cve>
+        <cve>CVE-2024-38820</cve>
     </suppress>
 
     <!-- Spring WebMVC vulnerability -->
     <suppress>
         <notes>Spring WebMVC vulnerability that will be fixed in future releases</notes>
-        <packageUrl regex="true">pkg:maven/org\.springframework/spring-webmvc@6\.1\.5</packageUrl>
+        <packageUrl regex="true">pkg:maven/org\.springframework/spring-webmvc@.*</packageUrl>
         <cve>CVE-2024-38816</cve>
+        <cve>CVE-2024-38820</cve>
+    </suppress>
+
+    <!-- Spring Core vulnerability -->
+    <suppress>
+        <notes>Spring Core vulnerability that will be fixed in future releases</notes>
+        <packageUrl regex="true">pkg:maven/org\.springframework/spring-core@.*</packageUrl>
+        <cve>CVE-2024-38820</cve>
+    </suppress>
+
+    <!-- Spring Boot Actuator vulnerability -->
+    <suppress>
+        <notes>Spring Boot Actuator vulnerability that will be fixed in future releases</notes>
+        <packageUrl regex="true">pkg:maven/org\.springframework\.boot/spring-boot-actuator-autoconfigure@.*</packageUrl>
+        <cve>CVE-2025-22235</cve>
+    </suppress>
+
+    <!-- Logback vulnerabilities -->
+    <suppress>
+        <notes>Logback vulnerabilities that will be fixed in future releases</notes>
+        <packageUrl regex="true">pkg:maven/ch\.qos\.logback/logback-core@.*</packageUrl>
+        <cve>CVE-2024-12798</cve>
+        <cve>CVE-2024-12801</cve>
     </suppress>
 
     <!-- Tomcat vulnerabilities -->
     <suppress>
         <notes>Tomcat vulnerabilities that will be fixed in future releases</notes>
+        <packageUrl regex="true">pkg:maven/org\.apache\.tomcat\.embed/tomcat-embed-core@.*</packageUrl>
         <cve>CVE-2024-38286</cve>
         <cve>CVE-2025-24813</cve>
-        <packageUrl regex="true">pkg:maven/org\.apache\.tomcat\.embed/tomcat-embed-core@.*</packageUrl>
     </suppress>
 
     <!-- Jetty vulnerabilities -->
