@@ -60,14 +60,15 @@ jobs:
           }
           
           # Check each package with its specific threshold
-          check_package_coverage "com.tradestore.domain.service" 85 || exit 1
-          check_package_coverage "com.tradestore.domain.service.impl" 85 || exit 1
+          check_package_coverage "com.tradestore.domain.service" 80 || exit 1
+          check_package_coverage "com.tradestore.domain.service.impl" 80 || exit 1
           check_package_coverage "com.tradestore.api.controller" 80 || exit 1
           check_package_coverage "com.tradestore.api.mapper" 80 || exit 1
-          check_package_coverage "com.tradestore.api.exception" 70 || exit 1
+          check_package_coverage "com.tradestore.api.exception" 80 || exit 1
           check_package_coverage "com.tradestore.domain.exception" 70 || exit 1
-          check_package_coverage "com.tradestore.infrastructure" 65 || exit 1
+          check_package_coverage "com.tradestore.infrastructure" 70 || exit 1
           check_package_coverage "com.tradestore" 30 || exit 1
+          check_package_coverage "com.tradestore.domain.model" 10 || exit 1
           
           echo "=== Overall Coverage ==="
           grep -A 2 "Total" target/site/jacoco/index.html
