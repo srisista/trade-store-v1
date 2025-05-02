@@ -44,7 +44,7 @@ jobs:
         path: target/site/jacoco/
 
     - name: Run OWASP Dependency Check
-      run: mvn org.owasp:dependency-check-maven:check -Dnvd.api.key=${{ secrets.NVD_API_KEY }}
+      run: mvn org.owasp:dependency-check-maven:check
       continue-on-error: false
 
     - name: Upload Dependency Check Report
