@@ -43,13 +43,34 @@ jobs:
         name: coverage-report
         path: target/site/jacoco/
 
-    - name: Dependency Check
+    - name: Run OWASP Dependency Check
       run: mvn org.owasp:dependency-check-maven:check
-      continue-on-error: true
+      continue-on-error: false
 
     - name: Upload Dependency Check Report
       uses: actions/upload-artifact@v3
       if: always()
       with:
         name: dependency-check-report
-        path: target/dependency-check-report.html 
+        path: target/dependency-check-report.html
+
+    - name: Check Test Coverage
+      run: |
+        COVERAGE=$(grep -oP 'Total.*?(\d+\.\d+)%' target/site/jacoco/index.html | grep -oP '\d+\.\d+')
+        if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+          echo "Test coverage is below 80% (current: $COVERAGE%)"
+          exit 1
+        fi
+
+    - name: Run SonarQube Analysis
+      uses: SonarSource/sonarqube-scan-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      with:
+        args: >
+          -Dsonar.projectKey=trade-store
+          -Dsonar.java.binaries=target/classes
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+          -Dsonar.dependencyCheck.reportPath=target/dependency-check-report.html
+          -Dsonar.dependencyCheck.htmlReportPath=target/dependency-check-report.html 
