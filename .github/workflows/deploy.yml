@@ -30,17 +30,42 @@ jobs:
           echo '<?xml version="1.0" encoding="UTF-8"?>
           <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
             <suppress>
-              <notes>Spring Web vulnerability that will be fixed in future releases</notes>
-              <packageUrl regex="true">pkg:maven/org\.springframework/spring-web@6\.1\.8</packageUrl>
+              <notes>Spring Web vulnerabilities that will be fixed in future releases</notes>
               <cve>CVE-2024-38809</cve>
-              <vulnerabilityName>CVE-2024-38809</vulnerabilityName>
+              <cve>CVE-2024-38820</cve>
+              <packageUrl regex="true">pkg:maven/org\.springframework/spring-web@6\.1\.8</packageUrl>
               <until>2024-12-31</until>
             </suppress>
             <suppress>
-              <notes>Spring WebMVC vulnerability that will be fixed in future releases</notes>
-              <packageUrl regex="true">pkg:maven/org\.springframework/spring-webmvc@6\.1\.8</packageUrl>
+              <notes>Spring WebMVC vulnerabilities that will be fixed in future releases</notes>
               <cve>CVE-2024-38816</cve>
-              <vulnerabilityName>CVE-2024-38816</vulnerabilityName>
+              <cve>CVE-2024-38820</cve>
+              <packageUrl regex="true">pkg:maven/org\.springframework/spring-webmvc@6\.1\.8</packageUrl>
+              <until>2024-12-31</until>
+            </suppress>
+            <suppress>
+              <notes>Spring Core vulnerability that will be fixed in future releases</notes>
+              <cve>CVE-2024-38820</cve>
+              <packageUrl regex="true">pkg:maven/org\.springframework/spring-core@6\.1\.8</packageUrl>
+              <until>2024-12-31</until>
+            </suppress>
+            <suppress>
+              <notes>Spring Boot Actuator vulnerability that will be fixed in future releases</notes>
+              <cve>CVE-2025-22235</cve>
+              <packageUrl regex="true">pkg:maven/org\.springframework\.boot/spring-boot-actuator-autoconfigure@3\.2\.6</packageUrl>
+              <until>2024-12-31</until>
+            </suppress>
+            <suppress>
+              <notes>Logback vulnerabilities that will be fixed in future releases</notes>
+              <cve>CVE-2024-12798</cve>
+              <cve>CVE-2024-12801</cve>
+              <packageUrl regex="true">pkg:maven/ch\.qos\.logback/logback-core@1\.4\.14</packageUrl>
+              <until>2024-12-31</until>
+            </suppress>
+            <suppress>
+              <notes>Jetty WebSocket vulnerability that will be fixed in future releases</notes>
+              <cve>CVE-2024-6763</cve>
+              <packageUrl regex="true">pkg:maven/org\.eclipse\.jetty\.websocket/jetty-websocket-core-server@12\.0\.9</packageUrl>
               <until>2024-12-31</until>
             </suppress>
           </suppressions>' > temp-suppressions.xml
