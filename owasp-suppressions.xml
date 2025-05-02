@@ -1,70 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-    <!-- Undertow Suppressions -->
-    <suppress>
-        <notes>Undertow is used instead of Tomcat with secure defaults</notes>
-        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-core@.*$</packageUrl>
-        <cve>CVE-2025-24813</cve>
-    </suppress>
-
-    <!-- SpringDoc OpenAPI Suppressions -->
-    <suppress>
-        <notes>SpringDoc OpenAPI is used without UI components</notes>
-        <packageUrl regex="true">^pkg:maven/org\.springdoc/springdoc\-openapi\-starter\-webmvc\-api@.*$</packageUrl>
-        <cve>CVE-2024-45801</cve>
-        <cve>CVE-2024-47875</cve>
-    </suppress>
-
-    <!-- Suppress Swagger UI vulnerabilities -->
-    <suppress>
-        <notes>Swagger UI is used only in development environment with proper security measures</notes>
-        <packageUrl regex="true">^pkg:maven/org\.webjars/swagger\-ui@.*$</packageUrl>
-        <cve>CVE-2024-45801</cve>
-        <cve>CVE-2024-47875</cve>
-    </suppress>
-    <suppress>
-        <notes>Swagger UI bundle files are used only in development environment with proper security measures</notes>
-        <filePath regex="true">.*swagger-ui-bundle\.js$</filePath>
-        <cve>CVE-2024-45801</cve>
-        <cve>CVE-2024-47875</cve>
-    </suppress>
-    <suppress>
-        <notes>Swagger UI ES bundle files are used only in development environment with proper security measures</notes>
-        <filePath regex="true">.*swagger-ui-es-bundle\.js$</filePath>
-        <cve>CVE-2024-45801</cve>
-        <cve>CVE-2024-47875</cve>
-    </suppress>
-
     <!-- Spring Web vulnerabilities -->
     <suppress>
         <notes>Spring Web vulnerability that will be fixed in future releases</notes>
         <cve>CVE-2024-38809</cve>
-        <packageUrl regex="true">pkg:maven/org\.springframework/spring-web@6\.1\.10</packageUrl>
         <cvssBelow>9.0</cvssBelow>
+        <packageUrl regex="true">pkg:maven/org\.springframework/spring-web@6\.1\.12</packageUrl>
     </suppress>
 
     <!-- Spring WebMVC vulnerabilities -->
     <suppress>
         <notes>Spring WebMVC vulnerability that will be fixed in future releases</notes>
         <cve>CVE-2024-38816</cve>
-        <packageUrl regex="true">pkg:maven/org\.springframework/spring-webmvc@6\.1\.10</packageUrl>
         <cvssBelow>9.0</cvssBelow>
+        <packageUrl regex="true">pkg:maven/org\.springframework/spring-webmvc@6\.1\.12</packageUrl>
     </suppress>
 
     <!-- Spring Core vulnerability -->
     <suppress>
         <notes>Spring Core vulnerability that will be fixed in future releases</notes>
         <cve>CVE-2024-38820</cve>
-        <packageUrl regex="true">pkg:maven/org\.springframework/spring-core@6\.1\.10</packageUrl>
         <cvssBelow>9.0</cvssBelow>
+        <packageUrl regex="true">pkg:maven/org\.springframework/spring-core@6\.1\.12</packageUrl>
     </suppress>
 
     <!-- Spring Boot Actuator vulnerability -->
     <suppress>
         <notes>Spring Boot Actuator vulnerability that will be fixed in future releases</notes>
         <cve>CVE-2025-22235</cve>
-        <packageUrl regex="true">pkg:maven/org\.springframework\.boot/spring-boot-actuator-autoconfigure@3\.2\.7</packageUrl>
         <cvssBelow>9.0</cvssBelow>
+        <packageUrl regex="true">pkg:maven/org\.springframework\.boot/spring-boot-actuator-autoconfigure@3\.2\.8</packageUrl>
     </suppress>
 
     <!-- Logback vulnerabilities -->
@@ -72,16 +37,8 @@
         <notes>Logback vulnerabilities that will be fixed in future releases</notes>
         <cve>CVE-2024-12798</cve>
         <cve>CVE-2024-12801</cve>
-        <packageUrl regex="true">pkg:maven/ch\.qos\.logback/logback-core@1\.4\.14</packageUrl>
         <cvssBelow>9.0</cvssBelow>
-    </suppress>
-
-    <!-- Tomcat vulnerabilities -->
-    <suppress>
-        <notes>Tomcat vulnerabilities that will be fixed in future releases</notes>
-        <packageUrl regex="true">pkg:maven/org\.apache\.tomcat\.embed/tomcat-embed-core@.*</packageUrl>
-        <cve>CVE-2024-38286</cve>
-        <cve>CVE-2025-24813</cve>
+        <packageUrl regex="true">pkg:maven/ch\.qos\.logback/logback-core@1\.4\.14</packageUrl>
     </suppress>
 
     <!-- Jetty vulnerabilities -->
@@ -89,39 +46,23 @@
         <notes>Jetty vulnerabilities that will be fixed in future releases</notes>
         <cve>CVE-2023-26048</cve>
         <cve>CVE-2023-26049</cve>
+        <cvssBelow>9.0</cvssBelow>
         <packageUrl regex="true">pkg:maven/org\.eclipse\.jetty/jetty-server@.*</packageUrl>
     </suppress>
 
     <!-- JSON Smart Suppression -->
     <suppress>
         <notes>Using secure version of json-smart (2.5.0) with proper input validation</notes>
-        <packageUrl regex="true">^pkg:maven/net\.minidev/json\-smart@2\.5\.0$</packageUrl>
         <cve>CVE-2024-57699</cve>
-    </suppress>
-
-    <!-- Suppress Spring Web CVE-2024-22262 -->
-    <suppress>
-        <notes>Suppressing CVE-2024-22262 as it's a false positive for our usage</notes>
-        <cve>CVE-2024-22262</cve>
-    </suppress>
-    
-    <!-- Suppress Spring Web CVE-2024-38809 -->
-    <suppress>
-        <notes>Suppressing CVE-2024-38809 as it's a false positive for our usage</notes>
-        <cve>CVE-2024-38809</cve>
-    </suppress>
-    
-    <!-- Suppress Spring WebMVC CVE-2024-38816 -->
-    <suppress>
-        <notes>Suppressing CVE-2024-38816 as it's a false positive for our usage</notes>
-        <cve>CVE-2024-38816</cve>
+        <cvssBelow>9.0</cvssBelow>
+        <packageUrl regex="true">^pkg:maven/net\.minidev/json\-smart@2\.5\.0$</packageUrl>
     </suppress>
 
     <!-- Jetty WebSocket vulnerability -->
     <suppress>
         <notes>Jetty WebSocket vulnerability that will be fixed in future releases</notes>
         <cve>CVE-2024-6763</cve>
-        <packageUrl regex="true">pkg:maven/org\.eclipse\.jetty\.websocket/jetty-websocket-core-server@12\.0\.9</packageUrl>
         <cvssBelow>9.0</cvssBelow>
+        <packageUrl regex="true">pkg:maven/org\.eclipse\.jetty\.websocket/jetty-websocket-core-server@12\.0\.9</packageUrl>
     </suppress>
 </suppressions> 
