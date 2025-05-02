@@ -22,8 +22,30 @@ jobs:
           distribution: 'temurin'
           cache: maven
       
-      - name: Build with Maven
-        run: mvn clean package -DskipTests
+      - name: Build and Test with Coverage
+        run: |
+          # Run tests with coverage
+          mvn clean verify
+          
+          # Verify JaCoCo report exists
+          if [ ! -f "target/site/jacoco/index.html" ]; then
+            echo "::error::JaCoCo report not found. Please ensure tests are running and coverage is being collected."
+            exit 1
+          fi
+          
+          # Extract and display coverage information
+          echo "::group::Coverage Report"
+          echo "=== Package Coverage ==="
+          grep -A 2 "Total" target/site/jacoco/index.html
+          echo "=== Detailed Coverage ==="
+          grep -A 5 "Total" target/site/jacoco/index.html
+          echo "::endgroup::"
+          
+          # Check if any package is below threshold
+          if grep -q "Rule violated for package" target/site/jacoco/index.html; then
+            echo "::error::Some packages are below coverage threshold. Please add more tests."
+            exit 1
+          fi
       
       - name: Run OWASP Dependency Check
         run: |
@@ -51,13 +73,7 @@ jobs:
             -Ddependency-check.centralAnalyzerThreadCount=4 \
             -Ddependency-check.centralAnalyzerMaxRetries=3 \
             -Ddependency-check.centralAnalyzerRetryDelay=5000 \
-            -Ddependency-check.centralAnalyzerUrl=https://search.maven.org/solrsearch/select \
-            -Ddependency-check.centralAnalyzerUseCache=true \
-            -Ddependency-check.centralAnalyzerCacheTimeout=600 \
-            -Ddependency-check.centralAnalyzerParallelAnalysis=true \
-            -Ddependency-check.centralAnalyzerThreadCount=4 \
-            -Ddependency-check.centralAnalyzerMaxRetries=3 \
-            -Ddependency-check.centralAnalyzerRetryDelay=5000
+            -Ddependency-check.centralAnalyzerUrl=https://search.maven.org/solrsearch/select
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
