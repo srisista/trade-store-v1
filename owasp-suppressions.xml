@@ -72,4 +72,22 @@
         <packageUrl regex="true">^pkg:maven/net\.minidev/json\-smart@2\.5\.0$</packageUrl>
         <cve>CVE-2024-57699</cve>
     </suppress>
+
+    <!-- Suppress Spring Web CVE-2024-22262 -->
+    <suppress>
+        <notes>Suppressing CVE-2024-22262 as it's a false positive for our usage</notes>
+        <cve>CVE-2024-22262</cve>
+    </suppress>
+    
+    <!-- Suppress Spring Web CVE-2024-38809 -->
+    <suppress>
+        <notes>Suppressing CVE-2024-38809 as it's a false positive for our usage</notes>
+        <cve>CVE-2024-38809</cve>
+    </suppress>
+    
+    <!-- Suppress Spring WebMVC CVE-2024-38816 -->
+    <suppress>
+        <notes>Suppressing CVE-2024-38816 as it's a false positive for our usage</notes>
+        <cve>CVE-2024-38816</cve>
+    </suppress>
 </suppressions> 

@@ -25,6 +25,9 @@ jobs:
       - name: Build with Maven
         run: mvn clean package -DskipTests
       
+      - name: Run OWASP Dependency Check
+        run: mvn org.owasp:dependency-check-maven:check -Ddependency-check.suppressionFiles=owasp-suppressions.xml
+      
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       
