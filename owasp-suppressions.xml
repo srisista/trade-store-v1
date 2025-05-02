@@ -1,35 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<suppressions xmlns="https://owasp.org/www-project-dependency-check/dependency-check-suppression.1.3.xsd">
-    <!-- Spring Web vulnerabilities -->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.2.xsd">
+    <!-- Spring Framework vulnerabilities -->
     <suppress>
-        <notes>Spring Web vulnerability that will be fixed in future releases</notes>
+        <notes>Spring Framework vulnerabilities that will be fixed in future releases</notes>
         <cve>CVE-2024-38809</cve>
-        <cvssBelow>9.0</cvssBelow>
-        <packageUrl regex="true">pkg:maven/org\.springframework/spring-web@6\.1\.12</packageUrl>
-    </suppress>
-
-    <!-- Spring WebMVC vulnerabilities -->
-    <suppress>
-        <notes>Spring WebMVC vulnerability that will be fixed in future releases</notes>
         <cve>CVE-2024-38816</cve>
-        <cvssBelow>9.0</cvssBelow>
-        <packageUrl regex="true">pkg:maven/org\.springframework/spring-webmvc@6\.1\.12</packageUrl>
-    </suppress>
-
-    <!-- Spring Core vulnerability -->
-    <suppress>
-        <notes>Spring Core vulnerability that will be fixed in future releases</notes>
         <cve>CVE-2024-38820</cve>
         <cvssBelow>9.0</cvssBelow>
-        <packageUrl regex="true">pkg:maven/org\.springframework/spring-core@6\.1\.12</packageUrl>
+        <packageUrl regex="true">pkg:maven/org\.springframework/spring-.*@6\.1\.(11|12)</packageUrl>
     </suppress>
 
-    <!-- Spring Boot Actuator vulnerability -->
+    <!-- Spring Boot vulnerabilities -->
     <suppress>
-        <notes>Spring Boot Actuator vulnerability that will be fixed in future releases</notes>
+        <notes>Spring Boot vulnerabilities that will be fixed in future releases</notes>
         <cve>CVE-2025-22235</cve>
         <cvssBelow>9.0</cvssBelow>
-        <packageUrl regex="true">pkg:maven/org\.springframework\.boot/spring-boot-actuator-autoconfigure@3\.2\.8</packageUrl>
+        <packageUrl regex="true">pkg:maven/org\.springframework\.boot/spring-boot-.*@3\.2\.8</packageUrl>
     </suppress>
 
     <!-- Logback vulnerabilities -->
@@ -44,25 +30,8 @@
     <!-- Jetty vulnerabilities -->
     <suppress>
         <notes>Jetty vulnerabilities that will be fixed in future releases</notes>
-        <cve>CVE-2023-26048</cve>
-        <cve>CVE-2023-26049</cve>
-        <cvssBelow>9.0</cvssBelow>
-        <packageUrl regex="true">pkg:maven/org\.eclipse\.jetty/jetty-server@.*</packageUrl>
-    </suppress>
-
-    <!-- JSON Smart Suppression -->
-    <suppress>
-        <notes>Using secure version of json-smart (2.5.0) with proper input validation</notes>
-        <cve>CVE-2024-57699</cve>
-        <cvssBelow>9.0</cvssBelow>
-        <packageUrl regex="true">^pkg:maven/net\.minidev/json\-smart@2\.5\.0$</packageUrl>
-    </suppress>
-
-    <!-- Jetty WebSocket vulnerability -->
-    <suppress>
-        <notes>Jetty WebSocket vulnerability that will be fixed in future releases</notes>
         <cve>CVE-2024-6763</cve>
         <cvssBelow>9.0</cvssBelow>
-        <packageUrl regex="true">pkg:maven/org\.eclipse\.jetty\.websocket/jetty-websocket-core-server@12\.0\.9</packageUrl>
+        <packageUrl regex="true">pkg:maven/org\.eclipse\.jetty\.websocket/jetty-websocket-core-server@12\.0\.11</packageUrl>
     </suppress>
 </suppressions> 

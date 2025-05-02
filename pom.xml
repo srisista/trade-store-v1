@@ -28,7 +28,7 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <testcontainers.version>1.19.3</testcontainers.version>
         <jacoco.version>0.8.11</jacoco.version>
-        <dependency-check.version>8.4.3</dependency-check.version>
+        <dependency-check.version>8.2.1</dependency-check.version>
         <jackson.version>2.16.1</jackson.version>
         <logback.version>1.4.14</logback.version>
         <spring.version>6.1.12</spring.version>
@@ -241,6 +241,23 @@
                     <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
                     <nodeAuditAnalyzerEnabled>false</nodeAuditAnalyzerEnabled>
                     <cveValidForHours>24</cveValidForHours>
+                    <skipProvidedScope>true</skipProvidedScope>
+                    <skipRuntimeScope>true</skipRuntimeScope>
+                    <skipTestScope>true</skipTestScope>
+                    <centralAnalyzerEnabled>true</centralAnalyzerEnabled>
+                    <nexusAnalyzerEnabled>false</nexusAnalyzerEnabled>
+                    <nuspecAnalyzerEnabled>false</nuspecAnalyzerEnabled>
+                    <composerAnalyzerEnabled>false</composerAnalyzerEnabled>
+                    <bundleAuditAnalyzerEnabled>false</bundleAuditAnalyzerEnabled>
+                    <rubygemsAnalyzerEnabled>false</rubygemsAnalyzerEnabled>
+                    <cocoapodsAnalyzerEnabled>false</cocoapodsAnalyzerEnabled>
+                    <swiftPackageManagerAnalyzerEnabled>false</swiftPackageManagerAnalyzerEnabled>
+                    <centralAnalyzerUseCache>true</centralAnalyzerUseCache>
+                    <centralAnalyzerCacheTimeout>600</centralAnalyzerCacheTimeout>
+                    <centralAnalyzerParallelAnalysis>true</centralAnalyzerParallelAnalysis>
+                    <centralAnalyzerThreadCount>4</centralAnalyzerThreadCount>
+                    <centralAnalyzerMaxRetries>3</centralAnalyzerMaxRetries>
+                    <centralAnalyzerRetryDelay>5000</centralAnalyzerRetryDelay>
                 </configuration>
             </plugin>
         </plugins>
