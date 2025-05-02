@@ -13,10 +13,10 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -26,20 +26,28 @@ jobs:
         run: mvn clean package -DskipTests
       
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
       
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       
+      - name: Generate version
+        id: version
+        run: echo "VERSION=$(date +'%Y%m%d').${{ github.run_number }}" >> $GITHUB_OUTPUT
+      
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/trade-store:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/trade-store:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/trade-store:${{ steps.version.outputs.VERSION }}
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/trade-store:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/trade-store:buildcache,mode=max
       
       - name: Deploy to server
         uses: appleboy/ssh-action@master
@@ -48,6 +56,75 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
-            cd /path/to/deployment
+            # Create deployment directory if it doesn't exist
+            mkdir -p /opt/trade-store
+            
+            # Backup current deployment
+            if [ -f /opt/trade-store/docker-compose.yml ]; then
+              cp /opt/trade-store/docker-compose.yml /opt/trade-store/docker-compose.yml.backup
+            fi
+            
+            # Update docker-compose.yml with new version
+            cat > /opt/trade-store/docker-compose.yml << 'EOL'
+            version: '3.8'
+            services:
+              app:
+                image: ${{ secrets.DOCKERHUB_USERNAME }}/trade-store:${{ steps.version.outputs.VERSION }}
+                restart: unless-stopped
+                environment:
+                  - SPRING_PROFILES_ACTIVE=prod
+                  - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/tradestore
+                depends_on:
+                  - mongodb
+                networks:
+                  - trade-network
+                healthcheck:
+                  test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+                  interval: 30s
+                  timeout: 10s
+                  retries: 3
+                  start_period: 40s
+              
+              mongodb:
+                image: mongo:latest
+                restart: unless-stopped
+                volumes:
+                  - mongodb_data:/data/db
+                networks:
+                  - trade-network
+                healthcheck:
+                  test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+                  interval: 30s
+                  timeout: 10s
+                  retries: 3
+                  start_period: 40s
+            
+            volumes:
+              mongodb_data:
+            
+            networks:
+              trade-network:
+                driver: bridge
+            EOL
+            
+            # Pull new images and start services
+            cd /opt/trade-store
             docker-compose pull
-            docker-compose up -d 
+            docker-compose up -d
+            
+            # Wait for health checks
+            echo "Waiting for services to be healthy..."
+            sleep 30
+            
+            # Check if deployment was successful
+            if ! docker-compose ps | grep -q "healthy"; then
+              echo "Deployment failed - rolling back..."
+              if [ -f docker-compose.yml.backup ]; then
+                mv docker-compose.yml.backup docker-compose.yml
+                docker-compose up -d
+              fi
+              exit 1
+            fi
+            
+            # Cleanup old images
+            docker image prune -f 
