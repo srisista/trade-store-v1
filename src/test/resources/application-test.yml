@@ -1,0 +1,10 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/trade-store-test
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false 
