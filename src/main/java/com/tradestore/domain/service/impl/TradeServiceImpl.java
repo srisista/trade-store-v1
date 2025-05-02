@@ -1,5 +1,6 @@
 package com.tradestore.domain.service.impl;
 
+import com.tradestore.domain.exception.TradeException;
 import com.tradestore.domain.model.Trade;
 import com.tradestore.domain.model.TradeId;
 import com.tradestore.domain.service.TradeService;
@@ -23,49 +24,72 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     public Trade storeTrade(Trade trade) {
-        // Validate maturity date
-        if (trade.getMaturityDate().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Maturity date cannot be in the past");
-        }
+        try {
+            // Validate maturity date
+            if (trade.getMaturityDate().isBefore(LocalDate.now())) {
+                throw new TradeException("Maturity date cannot be in the past");
+            }
 
-        // Get the latest version of the trade
-        Optional<Trade> latestTrade = tradeRepository.findFirstByTradeId_TradeIdOrderByTradeId_VersionDesc(trade.getTradeId().getTradeId());
-        
-        // Validate version
-        if (latestTrade.isPresent() && trade.getTradeId().getVersion() < latestTrade.get().getTradeId().getVersion()) {
-            throw new IllegalArgumentException("Cannot store trade with lower version than existing trade");
+            // Get the latest version of the trade
+            Optional<Trade> latestTrade = tradeRepository.findFirstByTradeId_TradeIdOrderByTradeId_VersionDesc(trade.getTradeId().getTradeId());
+            
+            // Validate version
+            if (latestTrade.isPresent() && trade.getTradeId().getVersion() < latestTrade.get().getTradeId().getVersion()) {
+                throw new TradeException("Cannot store trade with lower version than existing trade");
+            }
+            
+            // Set created date
+            trade.setCreatedDate(LocalDate.now());
+            
+            // Save the trade
+            return tradeRepository.save(trade);
+        } catch (Exception e) {
+            if (e instanceof TradeException) {
+                throw e;
+            }
+            throw new TradeException("Error storing trade: " + e.getMessage(), e);
         }
-        
-        // Set created date
-        trade.setCreatedDate(LocalDate.now());
-        
-        // Save the trade
-        return tradeRepository.save(trade);
     }
 
     @Override
     public List<Trade> getAllTrades() {
-        return tradeRepository.findAll();
+        try {
+            return tradeRepository.findAll();
+        } catch (Exception e) {
+            throw new TradeException("Error retrieving trades: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public Optional<Trade> getTradeById(String tradeId) {
-        return tradeRepository.findFirstByTradeId_TradeIdOrderByTradeId_VersionDesc(tradeId);
+        try {
+            return tradeRepository.findFirstByTradeId_TradeIdOrderByTradeId_VersionDesc(tradeId);
+        } catch (Exception e) {
+            throw new TradeException("Error retrieving trade by ID: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public List<Trade> getTradesByTradeId(String tradeId) {
-        return tradeRepository.findByTradeId_TradeId(tradeId);
+        try {
+            return tradeRepository.findByTradeId_TradeId(tradeId);
+        } catch (Exception e) {
+            throw new TradeException("Error retrieving trade versions: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public void updateExpiredTrades() {
-        LocalDate today = LocalDate.now();
-        List<Trade> expiredTrades = tradeRepository.findByMaturityDateBeforeAndExpiredFalse(today);
-        
-        for (Trade trade : expiredTrades) {
-            trade.setExpired(true);
-            tradeRepository.save(trade);
+        try {
+            LocalDate today = LocalDate.now();
+            List<Trade> expiredTrades = tradeRepository.findByMaturityDateBeforeAndExpiredFalse(today);
+            
+            for (Trade trade : expiredTrades) {
+                trade.setExpired(true);
+                tradeRepository.save(trade);
+            }
+        } catch (Exception e) {
+            throw new TradeException("Error updating expired trades: " + e.getMessage(), e);
         }
     }
 } 

@@ -2,6 +2,9 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:27017/trade-store-test
+  jackson:
+    date-format: yyyy-MM-dd
+    time-zone: UTC
 
 springdoc:
   api-docs:

@@ -1,5 +1,6 @@
 package com.tradestore.domain.service.impl;
 
+import com.tradestore.domain.exception.TradeException;
 import com.tradestore.domain.model.Trade;
 import com.tradestore.domain.model.TradeId;
 import com.tradestore.infrastructure.repository.TradeRepository;
@@ -77,7 +78,7 @@ class TradeServiceImplTest {
                 .thenReturn(Optional.of(existingTrade));
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> tradeService.storeTrade(trade));
+        assertThrows(TradeException.class, () -> tradeService.storeTrade(trade));
         verify(tradeRepository, never()).save(any(Trade.class));
     }
 
@@ -87,7 +88,7 @@ class TradeServiceImplTest {
         trade.setMaturityDate(LocalDate.now().minusDays(1));
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> tradeService.storeTrade(trade));
+        assertThrows(TradeException.class, () -> tradeService.storeTrade(trade));
         verify(tradeRepository, never()).save(any(Trade.class));
     }
 
