@@ -38,16 +38,16 @@
     <!-- Spring Web vulnerabilities -->
     <suppress>
         <notes>Spring Web vulnerabilities that will be fixed in future releases</notes>
+        <packageUrl regex="true">pkg:maven/org\.springframework/spring-web@6\.1\.5</packageUrl>
         <cve>CVE-2024-22262</cve>
         <cve>CVE-2024-38809</cve>
-        <packageUrl regex="true">pkg:maven/org\.springframework/spring-web@.*</packageUrl>
     </suppress>
 
     <!-- Spring WebMVC vulnerability -->
     <suppress>
         <notes>Spring WebMVC vulnerability that will be fixed in future releases</notes>
+        <packageUrl regex="true">pkg:maven/org\.springframework/spring-webmvc@6\.1\.5</packageUrl>
         <cve>CVE-2024-38816</cve>
-        <packageUrl regex="true">pkg:maven/org\.springframework/spring-webmvc@.*</packageUrl>
     </suppress>
 
     <!-- Tomcat vulnerabilities -->
