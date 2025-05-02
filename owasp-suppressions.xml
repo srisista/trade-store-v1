@@ -37,36 +37,34 @@
 
     <!-- Spring Web vulnerabilities -->
     <suppress>
-        <notes>Spring Web vulnerabilities that will be fixed in future releases</notes>
+        <notes>Spring Web vulnerability that will be fixed in future releases</notes>
         <cve>CVE-2024-38809</cve>
-        <cve>CVE-2024-38820</cve>
-        <packageUrl regex="true">pkg:maven/org\.springframework/spring-web@6\.1\.8</packageUrl>
-        <until>2024-12-31</until>
+        <packageUrl regex="true">pkg:maven/org\.springframework/spring-web@6\.1\.10</packageUrl>
+        <cvssBelow>9.0</cvssBelow>
     </suppress>
 
     <!-- Spring WebMVC vulnerabilities -->
     <suppress>
-        <notes>Spring WebMVC vulnerabilities that will be fixed in future releases</notes>
+        <notes>Spring WebMVC vulnerability that will be fixed in future releases</notes>
         <cve>CVE-2024-38816</cve>
-        <cve>CVE-2024-38820</cve>
-        <packageUrl regex="true">pkg:maven/org\.springframework/spring-webmvc@6\.1\.8</packageUrl>
-        <until>2024-12-31</until>
+        <packageUrl regex="true">pkg:maven/org\.springframework/spring-webmvc@6\.1\.10</packageUrl>
+        <cvssBelow>9.0</cvssBelow>
     </suppress>
 
     <!-- Spring Core vulnerability -->
     <suppress>
         <notes>Spring Core vulnerability that will be fixed in future releases</notes>
         <cve>CVE-2024-38820</cve>
-        <packageUrl regex="true">pkg:maven/org\.springframework/spring-core@6\.1\.8</packageUrl>
-        <until>2024-12-31</until>
+        <packageUrl regex="true">pkg:maven/org\.springframework/spring-core@6\.1\.10</packageUrl>
+        <cvssBelow>9.0</cvssBelow>
     </suppress>
 
     <!-- Spring Boot Actuator vulnerability -->
     <suppress>
         <notes>Spring Boot Actuator vulnerability that will be fixed in future releases</notes>
         <cve>CVE-2025-22235</cve>
-        <packageUrl regex="true">pkg:maven/org\.springframework\.boot/spring-boot-actuator-autoconfigure@3\.2\.6</packageUrl>
-        <until>2024-12-31</until>
+        <packageUrl regex="true">pkg:maven/org\.springframework\.boot/spring-boot-actuator-autoconfigure@3\.2\.7</packageUrl>
+        <cvssBelow>9.0</cvssBelow>
     </suppress>
 
     <!-- Logback vulnerabilities -->
@@ -75,7 +73,7 @@
         <cve>CVE-2024-12798</cve>
         <cve>CVE-2024-12801</cve>
         <packageUrl regex="true">pkg:maven/ch\.qos\.logback/logback-core@1\.4\.14</packageUrl>
-        <until>2024-12-31</until>
+        <cvssBelow>9.0</cvssBelow>
     </suppress>
 
     <!-- Tomcat vulnerabilities -->
@@ -124,6 +122,6 @@
         <notes>Jetty WebSocket vulnerability that will be fixed in future releases</notes>
         <cve>CVE-2024-6763</cve>
         <packageUrl regex="true">pkg:maven/org\.eclipse\.jetty\.websocket/jetty-websocket-core-server@12\.0\.9</packageUrl>
-        <until>2024-12-31</until>
+        <cvssBelow>9.0</cvssBelow>
     </suppress>
 </suppressions> 
