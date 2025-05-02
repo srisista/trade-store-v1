@@ -34,12 +34,14 @@ jobs:
               <packageUrl regex="true">pkg:maven/org\.springframework/spring-web@6\.1\.8</packageUrl>
               <cve>CVE-2024-38809</cve>
               <vulnerabilityName>CVE-2024-38809</vulnerabilityName>
+              <until>2024-12-31</until>
             </suppress>
             <suppress>
               <notes>Spring WebMVC vulnerability that will be fixed in future releases</notes>
               <packageUrl regex="true">pkg:maven/org\.springframework/spring-webmvc@6\.1\.8</packageUrl>
               <cve>CVE-2024-38816</cve>
               <vulnerabilityName>CVE-2024-38816</vulnerabilityName>
+              <until>2024-12-31</until>
             </suppress>
           </suppressions>' > temp-suppressions.xml
           mvn org.owasp:dependency-check-maven:check \
@@ -59,7 +61,13 @@ jobs:
             -Ddependency-check.bundleAuditAnalyzerEnabled=false \
             -Ddependency-check.rubygemsAnalyzerEnabled=false \
             -Ddependency-check.cocoapodsAnalyzerEnabled=false \
-            -Ddependency-check.swiftPackageManagerAnalyzerEnabled=false
+            -Ddependency-check.swiftPackageManagerAnalyzerEnabled=false \
+            -Ddependency-check.centralAnalyzerUseCache=true \
+            -Ddependency-check.centralAnalyzerCacheTimeout=600 \
+            -Ddependency-check.centralAnalyzerParallelAnalysis=true \
+            -Ddependency-check.centralAnalyzerThreadCount=4 \
+            -Ddependency-check.centralAnalyzerMaxRetries=3 \
+            -Ddependency-check.centralAnalyzerRetryDelay=5000
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
