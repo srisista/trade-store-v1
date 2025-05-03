@@ -95,15 +95,13 @@ jobs:
           exit 1
         fi
         
-        # Debug: Show the content of the file
-        echo "Content of index.html:"
-        cat target/site/jacoco/index.html
-        
-        # Try to extract coverage using a more robust method
-        COVERAGE=$(cat target/site/jacoco/index.html | grep -o 'Total.*[0-9]\+\.[0-9]\+%' | grep -o '[0-9]\+\.[0-9]\+')
+        # Extract coverage using the correct HTML format
+        COVERAGE=$(grep -o 'Total.*<td class="ctr2">[0-9]\+%</td>' target/site/jacoco/index.html | grep -o '[0-9]\+%' | tr -d '%')
         
         if [ -z "$COVERAGE" ]; then
           echo "Failed to extract coverage percentage"
+          echo "Content of index.html:"
+          cat target/site/jacoco/index.html
           exit 1
         fi
         
