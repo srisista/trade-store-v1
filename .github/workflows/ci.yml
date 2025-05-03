@@ -80,7 +80,8 @@ jobs:
     - name: Check Test Coverage
       run: |
         echo "Test coverage is % started"
-              COVERAGE=$(grep -oP 'Total.*?(\d+\.\d+)%' target/site/jacoco/index.html | grep -oP '\d+\.\d+')
+              COVERAGE=$(grep-oP 'Total.*?(\d+\.\d+)%' target/site/jacoco/index.html | grep -oP '\d+\.\d+')
+        echo "Test coverage is % started $COVERAGE%"
         if (( $(echo "$COVERAGE < 80" | bc -l) )); then
           echo "Test coverage is below 80% (current: $COVERAGE%)"
           exit 1
