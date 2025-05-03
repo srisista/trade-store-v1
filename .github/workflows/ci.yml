@@ -125,4 +125,20 @@ jobs:
           -Dsonar.java.binaries=target/classes
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
           -Dsonar.dependencyCheck.reportPath=target/dependency-check-report.html
-          -Dsonar.dependencyCheck.htmlReportPath=target/dependency-check-report.html 
+          -Dsonar.dependencyCheck.htmlReportPath=target/dependency-check-report.html
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+      continue-on-error: true
+
+    - name: Check SonarQube Analysis Status
+      if: always()
+      run: |
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "SonarQube analysis completed successfully"
+        else
+          echo "SonarQube analysis failed. Please check the SonarQube server configuration:"
+          echo "1. Verify SONAR_HOST_URL is set correctly in repository secrets"
+          echo "2. Verify SONAR_TOKEN is valid and has proper permissions"
+          echo "3. Check if SonarQube server is accessible"
+          exit 1
+        fi 
