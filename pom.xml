@@ -10,7 +10,6 @@
         <version>3.2.8</version>
         <relativePath/>
     </parent>
-
     <groupId>com.tradestore</groupId>
     <artifactId>trade-store</artifactId>
     <version>1.0.0</version>

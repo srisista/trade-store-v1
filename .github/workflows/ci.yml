@@ -79,15 +79,42 @@ jobs:
 
     - name: Check Test Coverage
       run: |
-       
-        echo "Test coverage check started"
-        COVERAGE=$(grep -oP 'Total.*?(\d+\.\d+)%' target/site/jacoco/index.html | grep -oP '\d+\.\d+')
-        echo "Test coverage is $COVERAGE%"
+        echo "Starting test coverage check..."
+        
+        # Check if the directory exists
+        if [ ! -d "target/site/jacoco" ]; then
+          echo "JaCoCo directory not found at target/site/jacoco"
+          ls -la target/site || echo "target/site directory not found"
+          exit 1
+        fi
+        
+        # Check if the file exists
+        if [ ! -f "target/site/jacoco/index.html" ]; then
+          echo "JaCoCo report not found at target/site/jacoco/index.html"
+          ls -la target/site/jacoco || echo "target/site/jacoco directory not found"
+          exit 1
+        fi
+        
+        # Debug: Show the content of the file
+        echo "Content of index.html:"
+        cat target/site/jacoco/index.html
+        
+        # Try to extract coverage using a more robust method
+        COVERAGE=$(cat target/site/jacoco/index.html | grep -o 'Total.*[0-9]\+\.[0-9]\+%' | grep -o '[0-9]\+\.[0-9]\+')
+        
+        if [ -z "$COVERAGE" ]; then
+          echo "Failed to extract coverage percentage"
+          exit 1
+        fi
+        
+        echo "Extracted coverage: $COVERAGE%"
+        
         if (( $(echo "$COVERAGE < 80" | bc -l) )); then
           echo "Test coverage is below 80% (current: $COVERAGE%)"
           exit 1
         fi
-        echo "Test coverage check passed"
+        
+        echo "Test coverage check passed: $COVERAGE%"
 
     - name: Run SonarQube Analysis
       uses: SonarSource/sonarqube-scan-action@master
