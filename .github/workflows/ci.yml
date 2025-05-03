@@ -30,9 +30,14 @@ jobs:
       run: mvn clean verify
 
     - name: Check if target folder exists
+      shell: bash
       run: |
+        echo "Current working directory: $(pwd)"
+        echo "Listing current directory contents:"
+        ls -la
         if [ -d "target" ]; then
           echo "The target folder exists."
+          ls -la target
         else
           echo "The target folder does not exist."
           exit 1
