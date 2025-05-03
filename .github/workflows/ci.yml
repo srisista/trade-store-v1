@@ -29,6 +29,24 @@ jobs:
     - name: Build with Maven
       run: mvn clean verify
 
+    - name: Check if target folder exists
+      run: |
+        if [ -d "target" ]; then
+          echo "The target folder exists."
+        else
+          echo "The target folder does not exist."
+          exit 1
+        fi
+
+    - name: List contents of target folder
+      run: |
+        if [ -d "target" ]; then
+          echo "Listing contents of target and its subdirectories:"
+          find target
+        else
+          echo "The target folder does not exist."
+        fi
+
     - name: Upload Test Results
       uses: actions/upload-artifact@v4
       if: always()
