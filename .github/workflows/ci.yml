@@ -79,11 +79,7 @@ jobs:
 
     - name: Check Test Coverage
       run: |
-        if [ ! -f "target/site/jacoco/index.html" ]; then
-          echo "JaCoCo report not found. Please ensure tests are running and coverage is being collected."
-          exit 1
-        fi
-        COVERAGE=$(grep -oP 'Total.*?(\d+\.\d+)%' target/site/jacoco/index.html | grep -oP '\d+\.\d+')
+              COVERAGE=$(grep -oP 'Total.*?(\d+\.\d+)%' target/site/jacoco/index.html | grep -oP '\d+\.\d+')
         if (( $(echo "$COVERAGE < 80" | bc -l) )); then
           echo "Test coverage is below 80% (current: $COVERAGE%)"
           exit 1

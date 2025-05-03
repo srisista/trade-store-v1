@@ -38,7 +38,7 @@ jobs:
         run: |
           # Verify JaCoCo report exists
           if [ ! -f "target/site/jacoco/index.html" ]; then
-            echo "::error::JaCoCo report not found. Please ensure tests are running and coverage is being collected."
+            echo "::error::JaCoCo report not found from deploy yml. Please ensure tests are running and coverage is being collected."
             exit 1
           fi
           
