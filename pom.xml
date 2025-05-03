@@ -222,7 +222,6 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-
             <!-- JaCoCo Plugin -->
             <plugin>
                 <groupId>org.jacoco</groupId>
