@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,7 +67,7 @@ class TradeExpirationSchedulerTest {
 
         // Assert
         verify(tradeService, times(1)).updateExpiredTrades();
-        //verify(logger, times(1)).error(eq("Error updating expired trades: {}"), eq(exception.getMessage()), eq(exception));
+        verify(logger, times(1)).error(eq("Error updating expired trades: {}"), eq(exception.getMessage()), eq(exception));
     }
 
 } 
