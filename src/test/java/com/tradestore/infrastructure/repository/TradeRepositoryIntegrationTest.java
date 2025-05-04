@@ -6,9 +6,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,8 +17,11 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@DataMongoTest
 @ActiveProfiles("test")
+@TestPropertySource(properties = {
+    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration"
+})
 class TradeRepositoryIntegrationTest {
 
     @Autowired
@@ -59,7 +63,7 @@ class TradeRepositoryIntegrationTest {
         assertEquals(tradeId.getVersion(), foundTrade.get().getTradeId().getVersion());
     }
 
-    //@Test
+    @Test
     void findLatestVersion_ShouldReturnLatestVersion() {
         // Arrange
         String tradeId = "T1";

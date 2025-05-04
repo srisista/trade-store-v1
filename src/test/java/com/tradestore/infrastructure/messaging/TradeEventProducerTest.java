@@ -1,26 +1,25 @@
 package com.tradestore.infrastructure.messaging;
 
-import com.tradestore.config.KafkaTestConfig;
 import com.tradestore.domain.model.Trade;
 import com.tradestore.domain.model.TradeId;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest
-@ContextConfiguration(classes = {KafkaTestConfig.class})
+@ActiveProfiles("test")
 class TradeEventProducerTest {
 
-    @Autowired
+    @MockBean
     private KafkaTemplate<String, Trade> kafkaTemplate;
 
     @Autowired
@@ -28,9 +27,10 @@ class TradeEventProducerTest {
 
     @Test
     void shouldSendTradeEvent() {
-        // Given
+        // Arrange
+        TradeId tradeId = new TradeId("T1", 1);
         Trade trade = Trade.builder()
-                .tradeId(new TradeId(UUID.randomUUID().toString(), 1))
+                .tradeId(tradeId)
                 .counterPartyId("CP-1")
                 .bookId("B1")
                 .maturityDate(LocalDate.now().plusDays(1))
@@ -38,7 +38,10 @@ class TradeEventProducerTest {
                 .expired(false)
                 .build();
 
-        // When/Then
-        assertDoesNotThrow(() -> tradeEventProducer.sendTradeEvent(trade));
+        // Act
+        tradeEventProducer.sendTradeEvent(trade);
+
+        // Assert
+        verify(kafkaTemplate).send(eq("trades"), any(String.class), eq(trade));
     }
 } 
