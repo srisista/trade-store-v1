@@ -1,0 +1,38 @@
+@startuml Trade Store Architecture
+
+!define RECTANGLE class
+
+skinparam componentStyle rectangle
+
+package "Trade Store Application" {
+    [TradeController] as controller
+    [TradeService] as service
+    [TradeRepository] as repository
+    [TradeEventProducer] as producer
+}
+
+database "MongoDB" {
+    [Trade Collection] as mongo
+}
+
+database "PostgreSQL" {
+    [Trade Table] as postgres
+}
+
+queue "Kafka" {
+    [Trade Topic] as kafka
+}
+
+cloud "External Systems" {
+    [Client Applications] as client
+}
+
+client --> controller : HTTP/REST
+controller --> service : Business Logic
+service --> repository : Data Access
+service --> producer : Event Publishing
+repository --> mongo : NoSQL Storage
+repository --> postgres : SQL Storage
+producer --> kafka : Message Queue
+
+@enduml 
