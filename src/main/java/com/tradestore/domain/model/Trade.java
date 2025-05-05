@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.time.LocalDate;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "trades")
@@ -36,8 +36,4 @@ public class Trade {
 
     @Field("expired")
     private boolean expired;
-
-    public String getStringId() {
-        return tradeId != null ? tradeId.getTradeId() : null;
-    }
 } 

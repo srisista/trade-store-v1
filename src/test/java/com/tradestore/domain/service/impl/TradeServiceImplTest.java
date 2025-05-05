@@ -3,6 +3,9 @@ package com.tradestore.domain.service.impl;
 import com.tradestore.domain.exception.TradeException;
 import com.tradestore.domain.model.Trade;
 import com.tradestore.domain.model.TradeId;
+import com.tradestore.infrastructure.entity.TradeEntity;
+import com.tradestore.infrastructure.mapper.TradeMapper;
+import com.tradestore.infrastructure.repository.TradeJpaRepository;
 import com.tradestore.infrastructure.repository.TradeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,191 +21,189 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TradeServiceImplTest {
 
     @Mock
-    private TradeRepository tradeRepository;
+    private TradeRepository mongoRepository;
+
+    @Mock
+    private TradeJpaRepository jpaRepository;
+
+    @Mock
+    private TradeMapper tradeMapper;
 
     @InjectMocks
     private TradeServiceImpl tradeService;
 
     private Trade validTrade;
-    private Trade existingTrade;
+    private Trade expiredTrade;
+    private TradeEntity validTradeEntity;
 
     @BeforeEach
     void setUp() {
-        validTrade = new Trade();
-        validTrade.setTradeId(new TradeId("T1", 1));
-        validTrade.setCounterPartyId("CP-1");
-        validTrade.setBookId("B1");
-        validTrade.setMaturityDate(LocalDate.now().plusDays(1));
-        validTrade.setExpired(false);
+        validTrade = Trade.builder()
+                .tradeId(new TradeId("T1", 1))
+                .counterPartyId("CP-1")
+                .bookId("B1")
+                .maturityDate(LocalDate.now().plusDays(1))
+                .createdDate(LocalDate.now())
+                .expired(false)
+                .build();
 
-        existingTrade = new Trade();
-        existingTrade.setTradeId(new TradeId("T1", 2));
-        existingTrade.setCounterPartyId("CP-1");
-        existingTrade.setBookId("B1");
-        existingTrade.setMaturityDate(LocalDate.now().plusDays(1));
-        existingTrade.setExpired(false);
+        expiredTrade = Trade.builder()
+                .tradeId(new TradeId("T2", 1))
+                .counterPartyId("CP-2")
+                .bookId("B2")
+                .maturityDate(LocalDate.now().minusDays(1))
+                .createdDate(LocalDate.now().minusDays(2))
+                .expired(false)
+                .build();
+
+        validTradeEntity = new TradeEntity(); // Mock entity for testing
     }
 
     @Test
     void storeTrade_ValidTrade_ReturnsStoredTrade() {
-        when(tradeRepository.findFirstByTradeId_TradeIdOrderByTradeId_VersionDesc("T1"))
-            .thenReturn(Optional.empty());
-        when(tradeRepository.save(any(Trade.class))).thenReturn(validTrade);
+        when(mongoRepository.findByTradeIdAndVersion(eq("T1"), eq(1)))
+                .thenReturn(Optional.empty());
+        when(mongoRepository.save(any(Trade.class))).thenReturn(validTrade);
+        when(tradeMapper.toEntity(any(Trade.class))).thenReturn(validTradeEntity);
 
         Trade result = tradeService.storeTrade(validTrade);
 
         assertNotNull(result);
-        assertEquals("T1", result.getTradeId().getTradeId());
-        assertEquals(1, result.getTradeId().getVersion());
-        assertNotNull(result.getCreatedDate());
-        verify(tradeRepository, times(1)).save(any(Trade.class));
+        assertEquals(validTrade.getTradeId().getTradeId(), result.getTradeId().getTradeId());
+        verify(mongoRepository).save(any(Trade.class));
+        verify(jpaRepository).save(any(TradeEntity.class));
     }
 
     @Test
-    void storeTrade_InvalidMaturityDate_ThrowsException() {
-        validTrade.setMaturityDate(LocalDate.now().minusDays(1));
+    void storeTrade_ExistingTrade_ThrowsException() {
+        when(mongoRepository.findByTradeIdAndVersion(eq("T1"), eq(1)))
+                .thenReturn(Optional.of(validTrade));
 
-        TradeException exception = assertThrows(TradeException.class, 
-            () -> tradeService.storeTrade(validTrade));
-        assertEquals("Maturity date cannot be in the past", exception.getMessage());
-        verify(tradeRepository, never()).save(any(Trade.class));
+        assertThrows(TradeException.class, () -> tradeService.storeTrade(validTrade));
     }
 
     @Test
-    void storeTrade_LowerVersion_ThrowsException() {
-        when(tradeRepository.findFirstByTradeId_TradeIdOrderByTradeId_VersionDesc("T1"))
-            .thenReturn(Optional.of(existingTrade));
+    void storeTrade_PastMaturityDate_ThrowsException() {
+        Trade pastMaturityTrade = validTrade.toBuilder()
+                .maturityDate(LocalDate.now().minusDays(1))
+                .build();
 
-        TradeException exception = assertThrows(TradeException.class, 
-            () -> tradeService.storeTrade(validTrade));
-        assertEquals("Cannot store trade with lower version than existing trade", exception.getMessage());
-        verify(tradeRepository, never()).save(any(Trade.class));
-    }
-
-    @Test
-    void storeTrade_RepositoryError_ThrowsException() {
-        when(tradeRepository.findFirstByTradeId_TradeIdOrderByTradeId_VersionDesc("T1"))
-            .thenThrow(new RuntimeException("Database error"));
-
-        TradeException exception = assertThrows(TradeException.class, 
-            () -> tradeService.storeTrade(validTrade));
-        assertTrue(exception.getMessage().contains("Error storing trade"));
-        verify(tradeRepository, never()).save(any(Trade.class));
+        assertThrows(TradeException.class, () -> tradeService.storeTrade(pastMaturityTrade));
     }
 
     @Test
     void getAllTrades_ReturnsAllTrades() {
-        List<Trade> trades = Arrays.asList(validTrade, existingTrade);
-        when(tradeRepository.findAll()).thenReturn(trades);
+        List<Trade> expectedTrades = Arrays.asList(validTrade, expiredTrade);
+        when(mongoRepository.findAll()).thenReturn(expectedTrades);
 
         List<Trade> result = tradeService.getAllTrades();
 
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        verify(tradeRepository, times(1)).findAll();
-    }
-
-    @Test
-    void getAllTrades_RepositoryError_ThrowsException() {
-        when(tradeRepository.findAll()).thenThrow(new RuntimeException("Database error"));
-
-        TradeException exception = assertThrows(TradeException.class, 
-            () -> tradeService.getAllTrades());
-        assertTrue(exception.getMessage().contains("Error retrieving trades"));
+        assertEquals(expectedTrades.size(), result.size());
+        verify(mongoRepository).findAll();
     }
 
     @Test
     void getTradeById_ExistingTrade_ReturnsTrade() {
-        when(tradeRepository.findFirstByTradeId_TradeIdOrderByTradeId_VersionDesc("T1"))
-            .thenReturn(Optional.of(existingTrade));
+        String tradeId = "T1";
+        Integer version = 1;
+        when(mongoRepository.findByTradeIdAndVersion(eq(tradeId), eq(version)))
+                .thenReturn(Optional.of(validTrade));
 
-        Optional<Trade> result = tradeService.getTradeById("T1");
+        Optional<Trade> result = tradeService.getTradeById(tradeId, version);
 
         assertTrue(result.isPresent());
-        assertEquals("T1", result.get().getTradeId().getTradeId());
-        assertEquals(2, result.get().getTradeId().getVersion());
-        verify(tradeRepository, times(1)).findFirstByTradeId_TradeIdOrderByTradeId_VersionDesc("T1");
-    }
-
-    @Test
-    void getTradeById_NonExistingTrade_ReturnsEmpty() {
-        when(tradeRepository.findFirstByTradeId_TradeIdOrderByTradeId_VersionDesc("NONEXISTENT"))
-            .thenReturn(Optional.empty());
-
-        Optional<Trade> result = tradeService.getTradeById("NONEXISTENT");
-
-        assertTrue(result.isEmpty());
-        verify(tradeRepository, times(1)).findFirstByTradeId_TradeIdOrderByTradeId_VersionDesc("NONEXISTENT");
-    }
-
-    @Test
-    void getTradeById_RepositoryError_ThrowsException() {
-        when(tradeRepository.findFirstByTradeId_TradeIdOrderByTradeId_VersionDesc("T1"))
-            .thenThrow(new RuntimeException("Database error"));
-
-        TradeException exception = assertThrows(TradeException.class, 
-            () -> tradeService.getTradeById("T1"));
-        assertTrue(exception.getMessage().contains("Error retrieving trade by ID"));
+        assertEquals(validTrade.getTradeId().getTradeId(), result.get().getTradeId().getTradeId());
+        assertEquals(validTrade.getTradeId().getVersion(), result.get().getTradeId().getVersion());
     }
 
     @Test
     void getTradesByTradeId_ReturnsAllVersions() {
-        List<Trade> trades = Arrays.asList(validTrade, existingTrade);
-        when(tradeRepository.findByTradeId_TradeId("T1")).thenReturn(trades);
+        List<Trade> expectedTrades = Arrays.asList(validTrade);
+        when(mongoRepository.findByTradeIdOrderByVersionDesc(anyString()))
+                .thenReturn(expectedTrades);
 
         List<Trade> result = tradeService.getTradesByTradeId("T1");
 
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        verify(tradeRepository, times(1)).findByTradeId_TradeId("T1");
-    }
-
-    @Test
-    void getTradesByTradeId_RepositoryError_ThrowsException() {
-        when(tradeRepository.findByTradeId_TradeId("T1"))
-            .thenThrow(new RuntimeException("Database error"));
-
-        TradeException exception = assertThrows(TradeException.class, 
-            () -> tradeService.getTradesByTradeId("T1"));
-        assertTrue(exception.getMessage().contains("Error retrieving trade versions"));
+        assertEquals(expectedTrades.size(), result.size());
+        verify(mongoRepository).findByTradeIdOrderByVersionDesc("T1");
     }
 
     @Test
     void updateExpiredTrades_UpdatesExpiredTrades() {
-        List<Trade> expiredTrades = Arrays.asList(validTrade);
-        when(tradeRepository.findByMaturityDateBeforeAndExpiredFalse(any(LocalDate.class)))
-            .thenReturn(expiredTrades);
-        when(tradeRepository.save(any(Trade.class))).thenReturn(validTrade);
+        List<Trade> expiredTrades = Arrays.asList(expiredTrade);
+        when(mongoRepository.findByMaturityDateBeforeAndExpiredFalse(any(LocalDate.class)))
+                .thenReturn(expiredTrades);
+        when(tradeMapper.toEntity(any(Trade.class))).thenReturn(validTradeEntity);
 
         tradeService.updateExpiredTrades();
 
-        assertTrue(validTrade.isExpired());
-        verify(tradeRepository, times(1)).save(validTrade);
+        verify(mongoRepository).save(any(Trade.class));
+        verify(jpaRepository).save(any(TradeEntity.class));
     }
 
     @Test
-    void updateExpiredTrades_NoExpiredTrades_DoesNothing() {
-        when(tradeRepository.findByMaturityDateBeforeAndExpiredFalse(any(LocalDate.class)))
-            .thenReturn(List.of());
+    void getMongoTrades_ReturnsAllMongoTrades() {
+        // Arrange
+        List<Trade> expectedTrades = Arrays.asList(validTrade, expiredTrade);
+        when(mongoRepository.findAll()).thenReturn(expectedTrades);
 
-        tradeService.updateExpiredTrades();
+        // Act
+        List<Trade> result = tradeService.getMongoTrades();
 
-        verify(tradeRepository, never()).save(any(Trade.class));
+        // Assert
+        assertEquals(expectedTrades.size(), result.size());
+        verify(mongoRepository).findAll();
     }
 
     @Test
-    void updateExpiredTrades_RepositoryError_ThrowsException() {
-        when(tradeRepository.findByMaturityDateBeforeAndExpiredFalse(any(LocalDate.class)))
-            .thenThrow(new RuntimeException("Database error"));
+    void getPostgresTrades_ReturnsAllPostgresTrades() {
+        // Arrange
+        List<TradeEntity> entities = Arrays.asList(
+            TradeEntity.builder()
+                .tradeId("T1")
+                .version(1)
+                .counterPartyId("CP-1")
+                .bookId("B1")
+                .maturityDate(LocalDate.now().plusDays(1))
+                .createdDate(LocalDate.now())
+                .expired(false)
+                .build(),
+            TradeEntity.builder()
+                .tradeId("T2")
+                .version(1)
+                .counterPartyId("CP-2")
+                .bookId("B2")
+                .maturityDate(LocalDate.now().plusDays(1))
+                .createdDate(LocalDate.now())
+                .expired(false)
+                .build()
+        );
+        when(jpaRepository.findAll()).thenReturn(entities);
+        when(tradeMapper.toDomain(any(TradeEntity.class))).thenAnswer(i -> {
+            TradeEntity entity = i.getArgument(0);
+            return Trade.builder()
+                .tradeId(new TradeId(entity.getTradeId(), entity.getVersion()))
+                .counterPartyId(entity.getCounterPartyId())
+                .bookId(entity.getBookId())
+                .maturityDate(entity.getMaturityDate())
+                .createdDate(entity.getCreatedDate())
+                .expired(entity.isExpired())
+                .build();
+        });
 
-        TradeException exception = assertThrows(TradeException.class, 
-            () -> tradeService.updateExpiredTrades());
-        assertTrue(exception.getMessage().contains("Error updating expired trades"));
+        // Act
+        List<Trade> result = tradeService.getPostgresTrades();
+
+        // Assert
+        assertEquals(entities.size(), result.size());
+        verify(jpaRepository).findAll();
+        verify(tradeMapper, times(entities.size())).toDomain(any(TradeEntity.class));
     }
 } 

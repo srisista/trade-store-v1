@@ -29,4 +29,10 @@ public interface TradeRepository extends MongoRepository<Trade, String> {
 
     @Query(value = "{ 'maturityDate': { $lt: ?0 }, 'expired': false }", sort = "{ 'tradeId.version': -1 }")
     List<Trade> findByMaturityDateBeforeAndExpiredFalse(LocalDate date);
+
+    @Query("{ 'tradeId.tradeId': ?0, 'tradeId.version': ?1 }")
+    Optional<Trade> findByTradeIdAndVersion(String tradeId, Integer version);
+
+    @Query(value = "{ 'tradeId.tradeId': ?0 }", sort = "{ 'tradeId.version': -1 }")
+    List<Trade> findByTradeIdOrderByVersionDesc(String tradeId);
 } 

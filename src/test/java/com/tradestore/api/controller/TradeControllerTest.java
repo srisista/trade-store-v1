@@ -5,6 +5,7 @@ import com.tradestore.domain.exception.TradeException;
 import com.tradestore.domain.model.Trade;
 import com.tradestore.domain.model.TradeId;
 import com.tradestore.domain.service.TradeService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -19,10 +20,8 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TradeController.class)
 class TradeControllerTest {
@@ -30,11 +29,25 @@ class TradeControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @MockBean
+    private TradeService tradeService;
+
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
-    private TradeService tradeService;
+    private Trade validTrade;
+
+    @BeforeEach
+    void setUp() {
+        validTrade = Trade.builder()
+                .tradeId(new TradeId("T1", 1))
+                .counterPartyId("CP-1")
+                .bookId("B1")
+                .maturityDate(LocalDate.now().plusDays(1))
+                .createdDate(LocalDate.now())
+                .expired(false)
+                .build();
+    }
 
     @Test
     void storeTrade_ValidTrade_ReturnsCreatedTrade() throws Exception {
@@ -115,33 +128,22 @@ class TradeControllerTest {
     }
 
     @Test
-    void getTradeById_ExistingTrade_ReturnsTrade() throws Exception {
-        // Arrange
-        TradeId tradeId = new TradeId("T1", 1);
-        Trade trade = Trade.builder()
-                .tradeId(tradeId)
-                .counterPartyId("CP-1")
-                .bookId("B1")
-                .maturityDate(LocalDate.now().plusDays(1))
-                .createdDate(LocalDate.now())
-                .expired(false)
-                .build();
-        when(tradeService.getTradeById("T1")).thenReturn(Optional.of(trade));
+    void getTrade_ExistingTrade_ReturnsOk() throws Exception {
+        when(tradeService.getTradeById("T1", 1))
+                .thenReturn(Optional.of(validTrade));
 
-        // Act & Assert
-        mockMvc.perform(get("/api/trades/T1"))
+        mockMvc.perform(get("/api/trades/T1/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tradeId.tradeId").value("T1"))
                 .andExpect(jsonPath("$.tradeId.version").value(1));
     }
 
     @Test
-    void getTradeById_NonExistingTrade_ReturnsNotFound() throws Exception {
-        // Arrange
-        when(tradeService.getTradeById("T1")).thenReturn(Optional.empty());
+    void getTrade_NonExistingTrade_ReturnsNotFound() throws Exception {
+        when(tradeService.getTradeById("T1", 1))
+                .thenReturn(Optional.empty());
 
-        // Act & Assert
-        mockMvc.perform(get("/api/trades/T1"))
+        mockMvc.perform(get("/api/trades/T1/1"))
                 .andExpect(status().isNotFound());
     }
 
@@ -175,5 +177,31 @@ class TradeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].tradeId.version").value(1))
                 .andExpect(jsonPath("$[1].tradeId.version").value(2));
+    }
+
+    @Test
+    void getMongoTrades_ReturnsMongoTrades() throws Exception {
+        // Arrange
+        List<Trade> expectedTrades = Arrays.asList(validTrade);
+        when(tradeService.getMongoTrades()).thenReturn(expectedTrades);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/trades/mongo"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].tradeId.tradeId").value("T1"))
+                .andExpect(jsonPath("$[0].tradeId.version").value(1));
+    }
+
+    @Test
+    void getPostgresTrades_ReturnsPostgresTrades() throws Exception {
+        // Arrange
+        List<Trade> expectedTrades = Arrays.asList(validTrade);
+        when(tradeService.getPostgresTrades()).thenReturn(expectedTrades);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/trades/postgres"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].tradeId.tradeId").value("T1"))
+                .andExpect(jsonPath("$[0].tradeId.version").value(1));
     }
 } 

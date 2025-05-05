@@ -1,25 +1,28 @@
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/trade-store
+      host: localhost
+      port: 27017
+      database: tradestore
   datasource:
-    url: jdbc:postgresql://localhost:5432/trade-store
+    url: jdbc:postgresql://localhost:5432/tradestore
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
   kafka:
     bootstrap-servers: localhost:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.trusted.packages: com.tradestore.domain.model
     consumer:
       group-id: trade-store
       auto-offset-reset: earliest
@@ -52,5 +55,8 @@ management:
 
 logging:
   level:
-    org.springframework.kafka: INFO
-    com.tradestore: DEBUG 
+    root: INFO
+    org.springframework: DEBUG
+    org.springframework.data.mongodb: TRACE
+    com.tradestore: DEBUG
+    org.springframework.web: TRACE 
