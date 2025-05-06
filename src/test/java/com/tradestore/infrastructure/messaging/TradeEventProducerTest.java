@@ -1,47 +1,50 @@
 package com.tradestore.infrastructure.messaging;
 
 import com.tradestore.domain.model.Trade;
-import com.tradestore.domain.model.TradeId;
+import com.tradestore.util.TestUtils;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.kafka.support.SendResult;
 
-import java.time.LocalDate;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-@SpringBootTest
-@ActiveProfiles("test")
+@ExtendWith(MockitoExtension.class)
 class TradeEventProducerTest {
 
-    @MockBean
+    @Mock
     private KafkaTemplate<String, Trade> kafkaTemplate;
 
-    @Autowired
-    private TradeEventProducer tradeEventProducer;
+    @InjectMocks
+    private TradeEventProducer eventProducer;
 
     @Test
     void shouldSendTradeEvent() {
         // Arrange
-        TradeId tradeId = new TradeId("T1", 1);
-        Trade trade = Trade.builder()
-                .tradeId(tradeId)
-                .counterPartyId("CP-1")
-                .bookId("B1")
-                .maturityDate(LocalDate.now().plusDays(1))
-                .createdDate(LocalDate.now())
-                .expired(false)
-                .build();
+        Trade trade = TestUtils.createValidTrade();
+        when(kafkaTemplate.send(eq("trades"), eq(trade.getTradeId().toString()), eq(trade)))
+            .thenReturn(CompletableFuture.completedFuture(new SendResult<>(null, null)));
 
-        // Act
-        tradeEventProducer.sendTradeEvent(trade);
+        // Act & Assert
+        assertDoesNotThrow(() -> eventProducer.sendTradeEvent(trade));
+    }
 
-        // Assert
-        verify(kafkaTemplate).send(eq("trades"), any(String.class), eq(trade));
+    @Test
+    void shouldSendTradeEventWithExpiredTrade() {
+        // Arrange
+        Trade expiredTrade = TestUtils.createExpiredTrade();
+        when(kafkaTemplate.send(eq("trades"), eq(expiredTrade.getTradeId().toString()), eq(expiredTrade)))
+            .thenReturn(CompletableFuture.completedFuture(new SendResult<>(null, null)));
+
+        // Act & Assert
+        assertDoesNotThrow(() -> eventProducer.sendTradeEvent(expiredTrade));
     }
 } 

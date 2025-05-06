@@ -8,15 +8,15 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TradeExpirationScheduler {
-
-    private static final Logger logger = LoggerFactory.getLogger(TradeExpirationScheduler.class);
+    private final Logger logger;
     private final TradeService tradeService;
 
     public TradeExpirationScheduler(TradeService tradeService) {
+        this.logger = LoggerFactory.getLogger(TradeExpirationScheduler.class);
         this.tradeService = tradeService;
     }
 
-    @Scheduled(cron = "0 0 * * * *") // Run every hour
+    @Scheduled(cron = "${trade.expiration.cron:0 0 0 * * ?}")
     public void updateExpiredTrades() {
         try {
             tradeService.updateExpiredTrades();
@@ -25,6 +25,4 @@ public class TradeExpirationScheduler {
             // Don't rethrow the exception to prevent scheduler from stopping
         }
     }
-
-
 } 

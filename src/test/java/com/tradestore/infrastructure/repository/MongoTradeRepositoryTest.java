@@ -1,16 +1,15 @@
 package com.tradestore.infrastructure.repository;
 
+import com.tradestore.config.TestContainersConfig;
 import com.tradestore.domain.model.Trade;
 import com.tradestore.domain.model.TradeId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -19,16 +18,13 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataMongoTest
-@Testcontainers
+@ActiveProfiles("test")
+@Import(TestContainersConfig.class)
+@TestPropertySource(properties = {
+    "spring.mongodb.embedded.version=4.0.21",
+    "spring.data.mongodb.database=testdb"
+})
 class MongoTradeRepositoryTest {
-
-    @Container
-    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.4.2");
-
-    @DynamicPropertySource
-    static void setProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
-    }
 
     @Autowired
     private TradeRepository tradeRepository;
@@ -58,7 +54,7 @@ class MongoTradeRepositoryTest {
         assertNotNull(savedTrade.getId());
 
         // Retrieve trade
-        Optional<Trade> retrievedTrade = tradeRepository.findFirstByTradeId_TradeIdOrderByTradeId_VersionDesc(tradeId.getTradeId());
+        Optional<Trade> retrievedTrade = tradeRepository.findByTradeIdAndVersion(tradeId.getTradeId(), tradeId.getVersion());
         assertTrue(retrievedTrade.isPresent());
         assertEquals(tradeId.getTradeId(), retrievedTrade.get().getTradeId().getTradeId());
         assertEquals(tradeId.getVersion(), retrievedTrade.get().getTradeId().getVersion());
@@ -81,7 +77,7 @@ class MongoTradeRepositoryTest {
         tradeRepository.save(tradeV2);
 
         // Retrieve all versions
-        List<Trade> versions = tradeRepository.findByTradeId_TradeId("T1");
+        List<Trade> versions = tradeRepository.findByTradeIdOrderByVersionDesc("T1");
         assertEquals(2, versions.size());
     }
 

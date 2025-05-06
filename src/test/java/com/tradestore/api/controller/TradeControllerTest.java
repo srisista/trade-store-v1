@@ -5,6 +5,7 @@ import com.tradestore.domain.exception.TradeException;
 import com.tradestore.domain.model.Trade;
 import com.tradestore.domain.model.TradeId;
 import com.tradestore.domain.service.TradeService;
+import com.tradestore.util.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,34 +40,18 @@ class TradeControllerTest {
 
     @BeforeEach
     void setUp() {
-        validTrade = Trade.builder()
-                .tradeId(new TradeId("T1", 1))
-                .counterPartyId("CP-1")
-                .bookId("B1")
-                .maturityDate(LocalDate.now().plusDays(1))
-                .createdDate(LocalDate.now())
-                .expired(false)
-                .build();
+        validTrade = TestUtils.createValidTrade();
     }
 
     @Test
     void storeTrade_ValidTrade_ReturnsCreatedTrade() throws Exception {
         // Arrange
-        TradeId tradeId = new TradeId("T1", 1);
-        Trade trade = Trade.builder()
-                .tradeId(tradeId)
-                .counterPartyId("CP-1")
-                .bookId("B1")
-                .maturityDate(LocalDate.now().plusDays(1))
-                .createdDate(LocalDate.now())
-                .expired(false)
-                .build();
-        when(tradeService.storeTrade(any(Trade.class))).thenReturn(trade);
+        when(tradeService.storeTrade(any(Trade.class))).thenReturn(validTrade);
 
         // Act & Assert
         mockMvc.perform(post("/api/trades")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(trade)))
+                .content(objectMapper.writeValueAsString(validTrade)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.tradeId.tradeId").value("T1"))
                 .andExpect(jsonPath("$.tradeId.version").value(1));
@@ -75,22 +60,17 @@ class TradeControllerTest {
     @Test
     void storeTrade_InvalidTrade_ReturnsBadRequest() throws Exception {
         // Arrange
-        TradeId tradeId = new TradeId("T1", 1);
-        Trade trade = Trade.builder()
-                .tradeId(tradeId)
-                .counterPartyId("CP-1")
-                .bookId("B1")
+        Trade invalidTrade = validTrade.toBuilder()
                 .maturityDate(LocalDate.now().minusDays(1))
-                .createdDate(LocalDate.now())
-                .expired(false)
                 .build();
+        
         when(tradeService.storeTrade(any(Trade.class)))
                 .thenThrow(new TradeException("Maturity date cannot be in the past"));
 
         // Act & Assert
         mockMvc.perform(post("/api/trades")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(trade)))
+                .content(objectMapper.writeValueAsString(invalidTrade)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Maturity date cannot be in the past"));
     }
@@ -98,26 +78,13 @@ class TradeControllerTest {
     @Test
     void getAllTrades_ReturnsListOfTrades() throws Exception {
         // Arrange
-        TradeId tradeId1 = new TradeId("T1", 1);
-        TradeId tradeId2 = new TradeId("T2", 1);
-        List<Trade> trades = Arrays.asList(
-                Trade.builder()
-                        .tradeId(tradeId1)
-                        .counterPartyId("CP-1")
-                        .bookId("B1")
-                        .maturityDate(LocalDate.now().plusDays(1))
-                        .createdDate(LocalDate.now())
-                        .expired(false)
-                        .build(),
-                Trade.builder()
-                        .tradeId(tradeId2)
-                        .counterPartyId("CP-2")
-                        .bookId("B2")
-                        .maturityDate(LocalDate.now().plusDays(1))
-                        .createdDate(LocalDate.now())
-                        .expired(false)
-                        .build()
-        );
+        Trade secondTrade = TestUtils.createValidTrade().toBuilder()
+                .tradeId(new TradeId("T2", 1))
+                .counterPartyId("CP-2")
+                .bookId("B2")
+                .build();
+                
+        List<Trade> trades = Arrays.asList(validTrade, secondTrade);
         when(tradeService.getAllTrades()).thenReturn(trades);
 
         // Act & Assert
@@ -150,26 +117,11 @@ class TradeControllerTest {
     @Test
     void getTradesByTradeId_ReturnsListOfTrades() throws Exception {
         // Arrange
-        TradeId tradeId1 = new TradeId("T1", 1);
-        TradeId tradeId2 = new TradeId("T1", 2);
-        List<Trade> trades = Arrays.asList(
-                Trade.builder()
-                        .tradeId(tradeId1)
-                        .counterPartyId("CP-1")
-                        .bookId("B1")
-                        .maturityDate(LocalDate.now().plusDays(1))
-                        .createdDate(LocalDate.now())
-                        .expired(false)
-                        .build(),
-                Trade.builder()
-                        .tradeId(tradeId2)
-                        .counterPartyId("CP-1")
-                        .bookId("B1")
-                        .maturityDate(LocalDate.now().plusDays(1))
-                        .createdDate(LocalDate.now())
-                        .expired(false)
-                        .build()
-        );
+        Trade secondVersion = validTrade.toBuilder()
+                .tradeId(new TradeId("T1", 2))
+                .build();
+                
+        List<Trade> trades = Arrays.asList(validTrade, secondVersion);
         when(tradeService.getTradesByTradeId("T1")).thenReturn(trades);
 
         // Act & Assert

@@ -1,5 +1,6 @@
 package com.tradestore.infrastructure.repository;
 
+import com.tradestore.config.TestContainersConfig;
 import com.tradestore.domain.model.Trade;
 import com.tradestore.domain.model.TradeId;
 import org.junit.jupiter.api.AfterEach;
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -19,8 +21,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataMongoTest
 @ActiveProfiles("test")
+@Import(TestContainersConfig.class)
 @TestPropertySource(properties = {
-    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration"
+    "spring.mongodb.embedded.version=4.0.21",
+    "spring.data.mongodb.database=testdb"
 })
 class TradeRepositoryIntegrationTest {
 
@@ -55,7 +59,7 @@ class TradeRepositoryIntegrationTest {
 
         // Act
         Trade savedTrade = tradeRepository.save(trade);
-        Optional<Trade> foundTrade = tradeRepository.findByTradeId_TradeIdAndTradeId_Version(tradeId.getTradeId(), tradeId.getVersion());
+        Optional<Trade> foundTrade = tradeRepository.findByTradeIdAndVersion(tradeId.getTradeId(), tradeId.getVersion());
 
         // Assert
         assertTrue(foundTrade.isPresent());
@@ -89,11 +93,11 @@ class TradeRepositoryIntegrationTest {
         tradeRepository.save(trade2);
 
         // Act
-        Optional<Trade> latestTrade = tradeRepository.findFirstByTradeId_TradeIdOrderByTradeId_VersionDesc(tradeId);
+        List<Trade> trades = tradeRepository.findByTradeIdOrderByVersionDesc(tradeId);
 
         // Assert
-        assertTrue(latestTrade.isPresent());
-        assertEquals(2, latestTrade.get().getTradeId().getVersion());
+        assertFalse(trades.isEmpty());
+        assertEquals(2, trades.get(0).getTradeId().getVersion());
     }
 
     @Test
@@ -130,7 +134,7 @@ class TradeRepositoryIntegrationTest {
     }
 
     @Test
-    void findByTradeId_TradeId_ShouldReturnAllVersions() {
+    void findByTradeId_ShouldReturnAllVersions() {
         // Arrange
         String tradeId = "T1";
         Trade trade1 = Trade.builder()
@@ -155,7 +159,7 @@ class TradeRepositoryIntegrationTest {
         tradeRepository.save(trade2);
 
         // Act
-        List<Trade> foundTrades = tradeRepository.findByTradeId_TradeId(tradeId);
+        List<Trade> foundTrades = tradeRepository.findByTradeIdOrderByVersionDesc(tradeId);
 
         // Assert
         assertEquals(2, foundTrades.size());

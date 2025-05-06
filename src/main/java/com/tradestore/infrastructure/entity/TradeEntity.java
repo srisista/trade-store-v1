@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "trades")
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class TradeEntity {

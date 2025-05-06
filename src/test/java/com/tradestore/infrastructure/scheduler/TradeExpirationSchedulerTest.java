@@ -1,19 +1,15 @@
 package com.tradestore.infrastructure.scheduler;
 
 import com.tradestore.domain.service.TradeService;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -26,48 +22,33 @@ class TradeExpirationSchedulerTest {
     @Mock
     private Logger logger;
 
-    @InjectMocks
     private TradeExpirationScheduler scheduler;
-
-    private MockedStatic<LoggerFactory> mockedStatic;
 
     @BeforeEach
     void setUp() {
-        mockedStatic = mockStatic(LoggerFactory.class);
-        mockedStatic.when(() -> LoggerFactory.getLogger(TradeExpirationScheduler.class))
-            .thenReturn(logger);
-    }
-
-    @AfterEach
-    void tearDown() {
-        mockedStatic.close();
+        scheduler = new TradeExpirationScheduler(tradeService);
+        ReflectionTestUtils.setField(scheduler, "logger", logger);
     }
 
     @Test
-    void updateExpiredTrades_WhenServiceSucceeds_ShouldNotThrowException() {
-        // Arrange
-        doNothing().when(tradeService).updateExpiredTrades();
-
-        // Act
-        scheduler.updateExpiredTrades();
-
-        // Assert
-        verify(tradeService, times(1)).updateExpiredTrades();
-        verify(logger, never()).error(anyString(), any(Object.class), any(Throwable.class));
-    }
-
-    //@Test
     void updateExpiredTrades_WhenServiceThrowsException_ShouldLogErrorAndNotPropagate() {
         // Arrange
-        RuntimeException exception = new RuntimeException("Test exception");
-        doThrow(exception).when(tradeService).updateExpiredTrades();
+        RuntimeException testException = new RuntimeException("Test exception");
+        doThrow(testException).when(tradeService).updateExpiredTrades();
 
         // Act
         scheduler.updateExpiredTrades();
 
         // Assert
-        verify(tradeService, times(1)).updateExpiredTrades();
-        verify(logger, times(1)).error(eq("Error updating expired trades: {}"), eq(exception.getMessage()), eq(exception));
+        verify(logger).error(eq("Error updating expired trades: {}"), eq("Test exception"), eq(testException));
     }
 
+    @Test
+    void updateExpiredTrades_WhenServiceSucceeds_ShouldNotLogError() {
+        // Act
+        scheduler.updateExpiredTrades();
+
+        // Assert
+        verify(logger, never()).error(anyString(), any(), any());
+    }
 } 

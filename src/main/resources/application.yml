@@ -22,7 +22,12 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
+        spring.json.type.mapping: com.tradestore.domain.model.Trade:com.tradestore.domain.model.Trade
         spring.json.trusted.packages: com.tradestore.domain.model
+        spring.json.add.type.headers: true
+        acks: all
+        retries: 3
+        retry.backoff.ms: 1000
     consumer:
       group-id: trade-store
       auto-offset-reset: earliest
@@ -30,6 +35,8 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: com.tradestore.domain.model
+        spring.json.type.mapping: com.tradestore.domain.model.Trade:com.tradestore.domain.model.Trade
+        spring.json.add.type.headers: true
   jackson:
     date-format: yyyy-MM-dd
     time-zone: UTC
@@ -48,15 +55,18 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics,prometheus
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
 
 logging:
   level:
     root: INFO
-    org.springframework: DEBUG
-    org.springframework.data.mongodb: TRACE
+    org.springframework: INFO
+    org.springframework.data.mongodb: DEBUG
     com.tradestore: DEBUG
-    org.springframework.web: TRACE 
+    org.springframework.web: DEBUG
+    org.springframework.kafka: DEBUG 

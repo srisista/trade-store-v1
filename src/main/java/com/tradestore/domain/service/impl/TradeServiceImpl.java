@@ -5,6 +5,7 @@ import com.tradestore.domain.model.Trade;
 import com.tradestore.domain.service.TradeService;
 import com.tradestore.infrastructure.entity.TradeEntity;
 import com.tradestore.infrastructure.mapper.TradeMapper;
+import com.tradestore.infrastructure.messaging.TradeEventProducer;
 import com.tradestore.infrastructure.repository.TradeJpaRepository;
 import com.tradestore.infrastructure.repository.TradeRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class TradeServiceImpl implements TradeService {
     private final TradeRepository mongoRepository;
     private final TradeJpaRepository jpaRepository;
     private final TradeMapper tradeMapper;
+    private final TradeEventProducer tradeEventProducer;
 
     @Override
     @Transactional
@@ -50,6 +52,9 @@ public class TradeServiceImpl implements TradeService {
             
             // Save to PostgreSQL
             jpaRepository.save(tradeMapper.toEntity(trade));
+
+            // Send to Kafka
+            tradeEventProducer.sendTradeEvent(savedTrade);
 
             log.info("Trade stored successfully: {}", savedTrade);
             return savedTrade;
@@ -87,8 +92,9 @@ public class TradeServiceImpl implements TradeService {
             
             for (Trade trade : expiredTrades) {
                 trade.setExpired(true);
-                mongoRepository.save(trade);
+                Trade savedTrade = mongoRepository.save(trade);
                 jpaRepository.save(tradeMapper.toEntity(trade));
+                tradeEventProducer.sendTradeEvent(savedTrade);
                 log.info("Marked trade as expired: {}", trade);
             }
         } catch (Exception e) {
