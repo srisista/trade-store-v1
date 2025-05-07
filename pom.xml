@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.5</version>
+        <version>3.2.3</version>
         <relativePath/>
     </parent>
     <groupId>com.tradestore</groupId>
@@ -457,13 +457,13 @@
                 <configuration>
                     <failBuildOnCVSS>9</failBuildOnCVSS>
                     <suppressionFiles>
-                        <suppressionFile>owasp-suppressions.xml</suppressionFile>
+                        <suppressionFile>${project.basedir}/owasp-suppressions.xml</suppressionFile>
                     </suppressionFiles>
                     <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
                     <nodeAuditAnalyzerEnabled>false</nodeAuditAnalyzerEnabled>
                     <cveValidForHours>24</cveValidForHours>
                     <skipProvidedScope>true</skipProvidedScope>
-                    <skipRuntimeScope>true</skipRuntimeScope>
+                    <skipRuntimeScope>false</skipRuntimeScope>
                     <skipTestScope>true</skipTestScope>
                     <centralAnalyzerEnabled>true</centralAnalyzerEnabled>
                     <nexusAnalyzerEnabled>false</nexusAnalyzerEnabled>
@@ -480,6 +480,13 @@
                     <centralAnalyzerMaxRetries>3</centralAnalyzerMaxRetries>
                     <centralAnalyzerRetryDelay>5000</centralAnalyzerRetryDelay>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
